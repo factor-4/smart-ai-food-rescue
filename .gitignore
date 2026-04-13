@@ -1,0 +1,32 @@
+# Environment variables with secrets
+.env
+
+# Node modules
+node_modules/
+
+# Java build artifacts
+target/
+*.jar
+*.war
+
+# Python virtual environment
+venv/
+.venv/
+__pycache__/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Terraform state (will add later)
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Kubernetes secrets (will add later)
+*-secrets.yaml
