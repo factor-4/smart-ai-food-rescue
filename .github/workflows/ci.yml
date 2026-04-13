@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ------------------------------------------------------------
+  # Java Backend Services (Spring Boot)
+  # ------------------------------------------------------------
+  test-backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - user-service
+          - restaurant-service
+          - order-service
+          - notification-service
+          - pricing-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build and test ${{ matrix.service }}
+        run: |
+          cd services/${{ matrix.service }}
+          # future have actual code, replace with:
+          # ./mvnw clean test
+          echo "No tests yet for ${{ matrix.service }} "
+          exit 0
+
+  # ------------------------------------------------------------
+  # Python AI Service
+  # ------------------------------------------------------------
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd services/recommendation-agent
+         
+          # pip install -r requirements.txt
+          echo "No Python dependencies yet "
+
+      - name: Test recommendation agent
+        run: |
+          cd services/recommendation-agent
+          echo "No tests yet "
+          exit 0
+
+  # ------------------------------------------------------------
+  # Frontend (React + Vite)
+  # ------------------------------------------------------------
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Lint and type-check
+        run: |
+          cd frontend
+          
+          # npm run lint
+          # npx tsc --noEmit
+          echo "No lint/type-check yet – placeholder"
+          exit 0
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+  # ------------------------------------------------------------
+  # Placeholder for future Docker build & push
+  # ------------------------------------------------------------
+  # build-and-push:
+  #   needs: [test-backend, test-python, test-frontend]
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Build Docker images
+  #       run: echo "Will build and push to ACR later"
