@@ -74,12 +74,11 @@ public class JwtUtils {
      * Generates a JWT token signed with RSA private key.
      */
     public String generateJwtToken(Authentication authentication) {
-        // TODO: Replace with actual UserDetailsImpl once created
-        // UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-        // String username = userPrincipal.getUsername();
 
-        // Temporary placeholder:
-        String username = authentication.getName();
+         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+         String username = userPrincipal.getUsername();
+
+
 
         return Jwts.builder()
                 .setSubject(username)
