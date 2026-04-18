@@ -31,3 +31,7 @@ app:
     private-key-path: classpath:keys/private-pkcs8.pem
     public-key-path: classpath:keys/public.pem
     expiration-ms: 86400000
+
+logging:
+  level:
+    org.springframework.security: DEBUG
