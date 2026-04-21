@@ -26,6 +26,12 @@ eureka:
   instance:
     prefer-ip-address: true
 
+
+app:
+  jwt:
+    public-key-path: classpath:keys/public.pem
+    expiration-ms: 86400000
+
 logging:
   level:
     org.springframework.security: DEBUG

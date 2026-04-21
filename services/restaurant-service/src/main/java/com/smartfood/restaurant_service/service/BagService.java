@@ -118,7 +118,7 @@ public class BagService {
 
         /*
          * Business rule: if quantity hits 0, automatically mark SOLD_OUT.
-         
+
          */
         if (bag.getQuantity() != null && bag.getQuantity() == 0) {
             bag.setStatus(BagStatus.SOLD_OUT);
