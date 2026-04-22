@@ -1,0 +1,77 @@
+name: Restaurant Service CI
+
+# Run this workflow when code is pushed to main branch
+# or when a pull request targets main.
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/restaurant-service/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'services/restaurant-service/**'
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1 — Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2 — Set up Java 21
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          # Cache Maven dependencies between runs.
+          # First run downloads everything (~2 min).
+          # Subsequent runs reuse the cache (~10 sec).
+          cache: maven
+
+      # Step 3 — Build the JAR
+      # We skip tests here — tests run in a separate job
+      # that has a real PostgreSQL available.
+      - name: Build JAR
+        working-directory: services/restaurant-service
+        run: mvn clean package -DskipTests
+
+      # Step 4 — Build Docker image
+      # We build the image so Trivy can scan it.
+      - name: Build Docker image
+        working-directory: services/restaurant-service
+        run: |
+          docker build -t restaurant-service:${{ github.sha }} .
+
+      # Step 5 — Run Trivy security scan
+      # Trivy scans the Docker image for known CVEs
+      # (Common Vulnerabilities and Exposures).
+      # It checks the OS packages and Java dependencies
+      # inside the image against vulnerability databases.
+      #
+      # exit-code: '1' — fail the CI if vulnerabilities found.
+      # severity: CRITICAL,HIGH — only fail for serious issues.
+      # ignore-unfixed: true — ignore CVEs with no fix available
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: restaurant-service:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      # Step 6 — Upload Trivy results as artifact
+      # So you can download and read the full report
+      # even after the CI run finishes.
+      - name: Upload Trivy scan results
+        uses: actions/upload-artifact@v4
+        if: always()  # run even if previous step failed
+        with:
+          name: trivy-results
+          path: trivy-results.sarif
