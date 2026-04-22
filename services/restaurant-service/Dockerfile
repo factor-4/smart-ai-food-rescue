@@ -18,8 +18,8 @@ COPY pom.xml .
 COPY src ./src
 
 # Build the fat JAR.
-# -DskipTests — we run tests separately in CI, not during Docker build.
-RUN ./mvnw clean package -DskipTests
+# install maven and use it directly
+RUN apk add --no-cache maven && mvn clean package -DskipTests
 
 # ─────────────────────────────────────────
 # STAGE 2 — RUNTIME
