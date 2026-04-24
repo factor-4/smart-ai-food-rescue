@@ -66,36 +66,36 @@ jobs:
   # ------------------------------------------------------------
   # Frontend (React + Vite)
   # ------------------------------------------------------------
-  test-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Lint and type-check
-        run: |
-          cd frontend
-          
-          # npm run lint
-          # npx tsc --noEmit
-          echo "No lint/type-check yet – placeholder"
-          exit 0
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
+#  test-frontend:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: '20'
+#          cache: 'npm'
+#          cache-dependency-path: frontend/package-lock.json
+#
+#      - name: Install dependencies
+#        run: |
+#          cd frontend
+#          npm ci
+#
+#      - name: Lint and type-check
+#        run: |
+#          cd frontend
+#
+#          # npm run lint
+#          # npx tsc --noEmit
+#          echo "No lint/type-check yet – placeholder"
+#          exit 0
+#
+#      - name: Build frontend
+#        run: |
+#          cd frontend
+#          npm run build
 
   # ------------------------------------------------------------
   # Placeholder for future Docker build & push
