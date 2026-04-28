@@ -104,4 +104,16 @@ public class BagController {
         bagService.deleteBag(restaurantId, bagId, ownerId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/api/bags/{bagId}/reserve")
+    public ResponseEntity<?> reserve(@PathVariable Long bagId, @RequestParam Integer quantity) {
+        bagService.reserve(bagId, quantity);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/bags/{bagId}/release")
+    public ResponseEntity<?> release(@PathVariable Long bagId, @RequestParam Integer quantity) {
+        bagService.release(bagId, quantity);
+        return ResponseEntity.ok().build();
+    }
 }

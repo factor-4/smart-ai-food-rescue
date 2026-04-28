@@ -34,6 +34,8 @@ public class SecurityConfig {
 
                         // Kubernetes/Docker health checks — always public
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/bags/{bagId}/reserve", "/api/bags/{bagId}/release")
+                        .permitAll()
 
                         // Public read endpoints — no token needed
                         .requestMatchers(HttpMethod.GET,

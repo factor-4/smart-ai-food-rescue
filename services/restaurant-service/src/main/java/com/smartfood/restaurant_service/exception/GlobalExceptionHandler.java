@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+
+
 
 /*
  * @RestControllerAdvice — intercepts exceptions thrown by ANY
@@ -18,6 +21,7 @@ import java.util.Map;
  * one central class handles ALL errors consistently.
 
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -62,6 +66,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
+        log.error("Unhandled exception: ", ex);
         return buildError(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred"
@@ -76,5 +81,11 @@ public class GlobalExceptionHandler {
         body.put("error", status.getReasonPhrase());
         body.put("message", message);
         return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(InsufficientInventoryException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicate(
+            InsufficientInventoryException ex) {
+        return buildError(HttpStatus.CONFLICT, ex.getMessage());
     }
 }

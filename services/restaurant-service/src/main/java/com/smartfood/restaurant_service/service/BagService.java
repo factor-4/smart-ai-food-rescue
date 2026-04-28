@@ -143,4 +143,23 @@ public class BagService {
 
         bagRepository.delete(bag);
     }
+
+    @Transactional
+    public void reserve(Long bagId, int quantity) {
+        Bag bag = bagRepository.findById(bagId)
+                .orElseThrow(() -> new ResourceNotFoundException("Bag not found with id: " + bagId));
+        if (bag.getQuantity() < quantity) {
+            throw new ResourceNotFoundException("Not enough bags available");
+        }
+        bag.setQuantity(bag.getQuantity() - quantity);
+        bagRepository.save(bag);
+    }
+
+    @Transactional
+    public void release(Long bagId, int quantity) {
+        Bag bag = bagRepository.findById(bagId)
+                .orElseThrow(() -> new ResourceNotFoundException("Bag not found with id: " + bagId));
+        bag.setQuantity(bag.getQuantity() + quantity);
+        bagRepository.save(bag);
+    }
 }
