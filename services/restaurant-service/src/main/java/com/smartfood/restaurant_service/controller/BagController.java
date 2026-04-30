@@ -116,4 +116,9 @@ public class BagController {
         bagService.release(bagId, quantity);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/api/bags/{bagId}")
+    public ResponseEntity<BagResponse> getBag(@PathVariable Long bagId) {
+        return ResponseEntity.ok(bagService.getBagById(bagId));
+    }
 }

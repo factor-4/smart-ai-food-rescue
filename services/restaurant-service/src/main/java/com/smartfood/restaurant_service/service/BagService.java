@@ -162,4 +162,10 @@ public class BagService {
         bag.setQuantity(bag.getQuantity() + quantity);
         bagRepository.save(bag);
     }
+
+    public BagResponse getBagById(Long bagId) {
+        Bag bag = bagRepository.findById(bagId)
+                .orElseThrow(() -> new ResourceNotFoundException("Bag not found"));
+        return bagMapper.toResponse(bag);
+    }
 }
