@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/bags/{bagId}/reserve", "/api/bags/{bagId}/release")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/bags/**").permitAll()
 
                         // Public read endpoints — no token needed
                         .requestMatchers(HttpMethod.GET,
