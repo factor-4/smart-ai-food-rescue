@@ -7,7 +7,9 @@ import com.smartfood.order_service.domain.OrderStatus;
 import com.smartfood.order_service.dto.BagInfo;
 import com.smartfood.order_service.dto.request.CreateOrderRequest;
 import com.smartfood.order_service.dto.response.OrderResponse;
+import com.smartfood.order_service.event.InventoryUpdatedEvent;
 import com.smartfood.order_service.event.OrderCreatedEvent;
+import com.smartfood.order_service.event.OrderStatusChangedEvent;
 import com.smartfood.order_service.exception.InsufficientInventoryException;
 import com.smartfood.order_service.exception.ResourceNotFoundException;
 import com.smartfood.order_service.repository.OrderRepository;
@@ -28,6 +30,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final RestaurantServiceClient restaurantServiceClient;
     private final KafkaEventPublisher eventPublisher;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -46,7 +49,9 @@ public class OrderService {
         if (bagInfo.getQuantity() < request.getQuantity()) {
             throw new InsufficientInventoryException("Not enough bags available");
         }
-        BigDecimal price = bagInfo.getDiscountedPrice() != null ? bagInfo.getDiscountedPrice() : bagInfo.getOriginalPrice();
+        BigDecimal price = bagInfo.getDiscountedPrice() != null
+                ? bagInfo.getDiscountedPrice()
+                : bagInfo.getOriginalPrice();
         BigDecimal total = price.multiply(BigDecimal.valueOf(request.getQuantity()));
 
         // 3. Create order
@@ -61,7 +66,7 @@ public class OrderService {
         order = orderRepository.save(order);
         log.info("Order created with id: {}", order.getId());
 
-        // 4. Publish event to Kafka
+        // 4. Publish saga event to Kafka (already existing)
         OrderCreatedEvent event = new OrderCreatedEvent(
                 order.getId(),
                 order.getUserId(),
@@ -71,6 +76,28 @@ public class OrderService {
                 order.getIdempotencyKey()
         );
         eventPublisher.publishOrderCreated(event);
+
+        // 5. Publish order status notification
+        OrderStatusChangedEvent statusEvent = new OrderStatusChangedEvent(
+                order.getId(),
+                order.getUserId(),
+                order.getBagId(),
+                null,
+                "PENDING",
+                "Your order has been placed successfully!"
+        );
+        notificationEventPublisher.publishOrderStatusChange(statusEvent);
+
+        // 6. Publish inventory update notification
+        int remainingQuantity = bagInfo.getQuantity() - request.getQuantity();
+        InventoryUpdatedEvent inventoryEvent = new InventoryUpdatedEvent(
+                bagInfo.getId(),
+                bagInfo.getRestaurantId(),
+                remainingQuantity,
+                bagInfo.getName(),
+                remainingQuantity > 0 ? "AVAILABLE" : "SOLD_OUT"
+        );
+        notificationEventPublisher.publishInventoryUpdate(inventoryEvent);
 
         return OrderResponse.fromEntity(order);
     }

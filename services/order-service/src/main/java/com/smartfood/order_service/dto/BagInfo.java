@@ -10,4 +10,6 @@ public class BagInfo {
     private BigDecimal discountedPrice;
     private Integer quantity;
     private String status;
+    private Long restaurantId;
+    private String name;
 }
