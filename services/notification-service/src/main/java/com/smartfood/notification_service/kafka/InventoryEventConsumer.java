@@ -1,6 +1,5 @@
 package com.smartfood.notification_service.kafka;
 
-
 import com.smartfood.notification_service.event.InventoryUpdatedEvent;
 import com.smartfood.notification_service.event.OrderStatusChangedEvent;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,11 @@ public class InventoryEventConsumer {
 
     @KafkaListener(
             topics = "inventory-updated",
-            groupId = "notification-service-group"
+            groupId = "notification-service-group",
+            properties = {
+                    "spring.json.use.type.headers=false",
+                    "spring.json.value.default.type=com.smartfood.notification_service.event.InventoryUpdatedEvent"
+            }
     )
     public void consumeInventoryUpdate(
             @Payload InventoryUpdatedEvent event,
@@ -35,7 +38,6 @@ public class InventoryEventConsumer {
         try {
             redisTemplate.convertAndSend("inventory-updates", event);
             log.info("Published inventory event to Redis for bagId={}", event.getBagId());
-
         } catch (Exception e) {
             log.error("Failed to publish inventory event to Redis: {}", e.getMessage(), e);
         }
@@ -43,7 +45,11 @@ public class InventoryEventConsumer {
 
     @KafkaListener(
             topics = "order-status-changed",
-            groupId = "notification-service-group"
+            groupId = "notification-service-group",
+            properties = {
+                    "spring.json.use.type.headers=false",
+                    "spring.json.value.default.type=com.smartfood.notification_service.event.OrderStatusChangedEvent"
+            }
     )
     public void consumeOrderStatusChange(
             @Payload OrderStatusChangedEvent event,
@@ -57,7 +63,6 @@ public class InventoryEventConsumer {
         try {
             redisTemplate.convertAndSend("order-status-updates", event);
             log.info("Published order status event to Redis for orderId={}", event.getOrderId());
-
         } catch (Exception e) {
             log.error("Failed to publish order status event to Redis: {}", e.getMessage(), e);
         }
