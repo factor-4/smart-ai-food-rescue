@@ -26,11 +26,13 @@ spring:
               predicates:
                 - Path=/api/bags/**, /api/restaurants/**
 
-            # Add this inside your routes list
+
             - id: notification-service-ws
               uri: lb://notification-service
               predicates:
                 - Path=/ws/**
+              filters:
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
           globalcors:
             cors-configurations:
               '[/**]':
