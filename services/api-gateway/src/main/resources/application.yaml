@@ -25,6 +25,12 @@ spring:
               uri: lb://restaurant-service
               predicates:
                 - Path=/api/bags/**, /api/restaurants/**
+
+            # Add this inside your routes list
+            - id: notification-service-ws
+              uri: lb://notification-service
+              predicates:
+                - Path=/ws/**
           globalcors:
             cors-configurations:
               '[/**]':
