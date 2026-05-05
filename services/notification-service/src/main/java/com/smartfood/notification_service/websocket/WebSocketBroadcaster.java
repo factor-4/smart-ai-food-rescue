@@ -25,15 +25,12 @@ public class WebSocketBroadcaster {
     }
 
     public void broadcastOrderUpdate(OrderStatusChangedEvent event) {
-        String destination = "/queue/users/" + event.getUserId();
+        // Use topic scoped to userId instead of user queue
+        String destination = "/topic/orders/" + event.getUserId();
 
         log.info("Broadcasting order update to {}: orderId={}, status={}",
                 destination, event.getOrderId(), event.getNewStatus());
 
-        messagingTemplate.convertAndSendToUser(
-                event.getUserId().toString(),
-                "/queue/order-updates",
-                event
-        );
+        messagingTemplate.convertAndSend(destination, event);
     }
 }

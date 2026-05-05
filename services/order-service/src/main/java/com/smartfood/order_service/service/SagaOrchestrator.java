@@ -18,11 +18,8 @@ public class SagaOrchestrator {
     private final OrderRepository orderRepository;
     private final RestaurantServiceClient restaurantServiceClient;
     private final KafkaEventPublisher eventPublisher;
+    private final NotificationEventPublisher notificationEventPublisher;
 
-    /**
-     * Execute the saga steps for one order.
-     * If a step fails, compensate (undo) any completed steps.
-     */
     @Transactional
     public void executeSaga(Order order) {
         log.info("Starting saga for order {}", order.getId());
@@ -47,19 +44,27 @@ public class SagaOrchestrator {
             orderRepository.save(order);
             log.info("Order {} confirmed", order.getId());
 
+            //  notify user that order is confirmed
+            notificationEventPublisher.publishOrderStatusChange(
+                    new OrderStatusChangedEvent(
+                            order.getId(),
+                            order.getUserId(),
+                            order.getBagId(),
+                            "PENDING",
+                            "CONFIRMED",
+                            "🎉 Your order has been confirmed!"
+                    )
+            );
+
         } catch (Exception e) {
             log.error("Saga failed for order {}: {}", order.getId(), e.getMessage());
             compensate(order, e.getMessage());
         }
     }
 
-    // ----------------------------------------------------------------
-    // Compensation logic – undo steps that were already done
-    // ----------------------------------------------------------------
     private void compensate(Order order, String reason) {
         OrderStatus status = order.getStatus();
 
-        // If inventory was reserved (or beyond), release it
         if (status == OrderStatus.RESERVED || status == OrderStatus.PAID) {
             try {
                 restaurantServiceClient.releaseInventory(order.getBagId(), order.getQuantity());
@@ -71,25 +76,28 @@ public class SagaOrchestrator {
             }
         }
 
-        // Mark order as FAILED
         order.setStatus(OrderStatus.FAILED);
         orderRepository.save(order);
         publishEvent(new OrderFailedEvent(order.getId(), reason));
         log.info("Order {} marked as FAILED", order.getId());
+
+        //  notify user that order failed
+        notificationEventPublisher.publishOrderStatusChange(
+                new OrderStatusChangedEvent(
+                        order.getId(),
+                        order.getUserId(),
+                        order.getBagId(),
+                        "PENDING",
+                        "FAILED",
+                        "❌ Your order failed: " + reason
+                )
+        );
     }
 
-    // ----------------------------------------------------------------
-    // Mock payment – always succeeds for now
-    // ----------------------------------------------------------------
     private void mockPayment(Order order) {
-        // In a real system, you'd call a payment gateway.
-        // Here we just pretend it always works.
         log.debug("Mock payment succeeded for order {}", order.getId());
     }
 
-    // ----------------------------------------------------------------
-    // Helper to publish events safely (Kafka might be down, but we try)
-    // ----------------------------------------------------------------
     private void publishEvent(Object event) {
         try {
             if (event instanceof InventoryReservedEvent e) {
