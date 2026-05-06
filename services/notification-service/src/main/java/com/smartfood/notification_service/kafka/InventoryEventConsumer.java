@@ -18,6 +18,7 @@ public class InventoryEventConsumer {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+
     @KafkaListener(
             topics = "inventory-updated",
             groupId = "notification-service-group",
@@ -67,4 +68,9 @@ public class InventoryEventConsumer {
             log.error("Failed to publish order status event to Redis: {}", e.getMessage(), e);
         }
     }
+
+
+
+
+
 }

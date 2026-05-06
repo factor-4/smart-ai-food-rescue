@@ -99,6 +99,7 @@ public class OrderService {
         );
         notificationEventPublisher.publishInventoryUpdate(inventoryEvent);
 
+
         return OrderResponse.fromEntity(order);
     }
 
