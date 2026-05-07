@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic
+fastmcp
+langchain
+langgraph
+langchain-openai
+sqlalchemy
+psycopg2-binary
+pgvector
+pytest
+httpx
