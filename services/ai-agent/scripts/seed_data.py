@@ -1,4 +1,5 @@
 import psycopg2
+import os
 from psycopg2.extras import execute_values
 import openfoodfacts
 from faker import Faker
@@ -6,14 +7,22 @@ import random
 from datetime import datetime, timedelta
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
+load_dotenv() 
 
-# ── Database connection (same as your docker-compose) ──────────────────────
+# ── Database connection  ──────────────────────
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "smartfood")
+DB_USER = os.getenv("DB_USERNAME", "admin")      # same var name as Spring Boot
+DB_PASSWORD = os.getenv("DB_PASSWORD", "admin")
+
 conn = psycopg2.connect(
-    host="localhost",
-    port=5432,
-    database="smartfood",
-    user="admin",
-    password="admin"
+    host=DB_HOST,
+    port=DB_PORT,
+    database=DB_NAME,
+    user=DB_USER,
+    password=DB_PASSWORD
 )
 cur = conn.cursor()
 
