@@ -1,14 +1,12 @@
 from fastapi import FastAPI
-from app.mcp.server import mcp
 from app.api.routes import router as api_router
+from app.mcp.server import router as mcp_router
 
-app = FastAPI(title="SmartFood AI Agent Service", version="0.1.0")
-
+app = FastAPI(title="Smart Food Rescue AI Agent", version="1.0.0")
 
 @app.get("/health")
-async def health() -> dict:
+async def health():
     return {"status": "ok", "service": "ai-agent"}
 
-
 app.include_router(api_router)
-app.mount("/mcp", mcp.http_app())
+app.include_router(mcp_router)
