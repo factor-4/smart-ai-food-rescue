@@ -7,7 +7,7 @@ from typing import Any
 from app.agents.planner import PlannerAgent
 from app.agents.rag import RAGAgent
 from app.agents.pricing import PricingAgent
-from app.core.db import get_user_orders, get_available_bags_near, insert_click
+from app.core.db import get_user_history, get_available_bags_near, record_click, record_purchase
 
 router = APIRouter(prefix="/mcp", tags=["MCP Tools"])
 
@@ -28,7 +28,9 @@ TOOLS = [
     {"name": "get_available_bags", "description": "Available bags near coordinates",
      "inputSchema": {"type":"object","properties":{"lat":{"type":"number"},"lon":{"type":"number"}}}},
     {"name": "record_click", "description": "Record click feedback",
-     "inputSchema": {"type":"object","properties":{"user_id":{"type":"integer"},"bag_id":{"type":"integer"}},"required":["user_id","bag_id"]}}
+     "inputSchema": {"type":"object","properties":{"user_id":{"type":"integer"},"bag_id":{"type":"integer"}},"required":["user_id","bag_id"]}},
+    {"name": "record_purchase", "description": "Record a completed purchase",
+     "inputSchema": {"type":"object","properties":{"user_id":{"type":"integer"},"bag_id":{"type":"integer"},"order_id":{"type":"integer"},"price_paid":{"type":"number"}},"required":["user_id","bag_id","order_id","price_paid"]}},
 ]
 
 @router.get("/tools")
@@ -52,14 +54,22 @@ async def call_tool(req: CallToolRequest):
             discount = await pricing.suggest(req.arguments["bag_id"])
             result = {"bag_id": req.arguments["bag_id"], "discount": discount}
         elif req.name == "get_user_history":
-            result = get_user_orders(req.arguments["user_id"])
+            result = get_user_history(req.arguments["user_id"], req.arguments.get("limit", 20))
         elif req.name == "get_available_bags":
             lat = req.arguments.get("lat", 60.1699)
             lon = req.arguments.get("lon", 24.9384)
             result = get_available_bags_near(lat, lon)
         elif req.name == "record_click":
-            insert_click(req.arguments["user_id"], req.arguments["bag_id"])
-            result = "ok"
+            record_click(req.arguments["user_id"], req.arguments.get("bag_id"), req.arguments.get("context", "recommendation"))
+            result = {"success": True, "message": "Click recorded"}
+        elif req.name == "record_purchase":
+            record_purchase(
+                req.arguments["user_id"],
+                req.arguments["bag_id"],
+                req.arguments["order_id"],
+                req.arguments["price_paid"]
+            )
+            result = {"success": True, "message": "Purchase recorded"}
         else:
             raise HTTPException(status_code=404, detail=f"Unknown tool: {req.name}")
         return {"result": result}
