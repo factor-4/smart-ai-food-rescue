@@ -1,0 +1,22 @@
+[
+  {
+    "user_id": 1,
+    "query": "cheap vegan lunch",
+    "expected_recommendations": [158, 159, 309]
+  },
+  {
+    "user_id": 2,
+    "query": "fresh salmon and potatoes",
+    "expected_recommendations": [115, 201]
+  },
+ {
+    "user_id": 3,
+    "query": "gluten-free breakfast",
+    "expected_recommendations": [298, 164, 175, 188, 157]
+  },
+  {
+    "user_id": 4,
+    "query": "quick meal under 5 euros",
+    "expected_recommendations": [374, 125]
+  }
+]
