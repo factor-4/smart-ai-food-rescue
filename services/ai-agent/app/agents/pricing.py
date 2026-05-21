@@ -5,6 +5,7 @@ Designed so an LLM fallback can be added later without changing the callers.
 """
 from datetime import datetime, timezone
 from app.core.db import get_bag_by_id
+from langsmith import traceable
 
 class PricingAgent:
     def __init__(self):
@@ -14,6 +15,7 @@ class PricingAgent:
         self.base_discount = 0.10    # 10% minimum
         self.max_discount = 0.70     # never discount more than 70%
 
+    @traceable(name="PricingAgent.suggest", project_name="smart-food-rescue")
     async def suggest(self, bag_id: int) -> float:
         """
         Return a discount as a decimal (0.0 = 0%, 1.0 = 100%).
