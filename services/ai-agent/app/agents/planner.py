@@ -6,6 +6,7 @@ from langchain_ollama import ChatOllama
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+from langsmith import traceable
 
 # Define the expected output schema for the plan
 class PlanOutput(BaseModel):
@@ -19,6 +20,8 @@ class PlannerAgent:
         self.parser = PydanticOutputParser(pydantic_object=PlanOutput)
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", """
+You MUST respond with ONLY a valid JSON object. No other text, no explanations.
+
 You are a planning agent for a food rescue app. Your job is to create a plan to fulfill the user's request.
 Available tools:
 - get_user_history: retrieves past orders
@@ -35,6 +38,7 @@ Output a JSON plan with exactly two keys:
             ("user", "{user_query}")
         ])
 
+    @traceable(name="PlannerAgent.plan", project_name="smart-food-rescue")
     async def plan(self, user_query: str) -> dict:
         # Build the chain: prompt -> LLM -> parser
         chain = self.prompt | self.llm | self.parser
