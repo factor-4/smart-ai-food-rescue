@@ -53,3 +53,9 @@ app:
       order-failed: order-failed
       inventory-released: inventory-released
       order-failed-dlq: order-failed-dlq
+
+
+
+mcp:
+  ai-agent:
+    base-url: ${MCP_AI_AGENT_BASE_URL:http://localhost:8000}

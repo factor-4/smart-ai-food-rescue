@@ -7,6 +7,7 @@ import com.smartfood.order_service.event.*;
 import com.smartfood.order_service.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,8 @@ public class SagaOrchestrator {
     private final RestaurantServiceClient restaurantServiceClient;
     private final KafkaEventPublisher eventPublisher;
     private final NotificationEventPublisher notificationEventPublisher;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public void executeSaga(Order order) {
@@ -44,6 +47,14 @@ public class SagaOrchestrator {
             orderRepository.save(order);
             log.info("Order {} confirmed", order.getId());
 
+            // ----- Record purchase via MCP -----
+            applicationEventPublisher.publishEvent(new OrderConfirmedEvent(
+                    order.getId(),
+                    order.getUserId(),
+                    order.getBagId(),
+                    order.getTotalPrice()
+            ));
+
             //  notify user that order is confirmed
             notificationEventPublisher.publishOrderStatusChange(
                     new OrderStatusChangedEvent(
@@ -55,6 +66,8 @@ public class SagaOrchestrator {
                             "🎉 Your order has been confirmed!"
                     )
             );
+
+
 
         } catch (Exception e) {
             log.error("Saga failed for order {}: {}", order.getId(), e.getMessage());
