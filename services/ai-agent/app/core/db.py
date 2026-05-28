@@ -228,3 +228,31 @@ def calculate_ctr(user_id: int = None, days: int = 30) -> dict:
             "total_clicks": clicks,
             "total_purchases": purchases
         }
+    
+
+
+
+
+def get_bag_embedding(bag_id: int) -> list[float] | None:
+    """
+    Retrieve the embedding vector for a specific bag.
+    Handles both native list (psycopg2+pgvector) and string representation.
+    Returns None if the bag doesn't have an embedding.
+    """
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT embedding FROM bag_embeddings WHERE bag_id = :bag_id"),
+            {"bag_id": bag_id}
+        ).fetchone()
+        if row is None:
+            return None
+        emb = row[0]
+        if emb is None:
+            return None
+        # If already a list (common with pgvector+psycopg2)
+        if isinstance(emb, list):
+            return [float(x) for x in emb]
+        # If it's a string like "[0.1,0.2,...]"
+        if isinstance(emb, str):
+            return [float(x) for x in emb.strip('[]').split(',')]
+        return None
