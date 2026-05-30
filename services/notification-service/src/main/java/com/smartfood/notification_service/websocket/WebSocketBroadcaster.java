@@ -3,6 +3,7 @@ package com.smartfood.notification_service.websocket;
 
 import com.smartfood.notification_service.event.InventoryUpdatedEvent;
 import com.smartfood.notification_service.event.OrderStatusChangedEvent;
+import com.smartfood.notification_service.event.PriceUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -32,5 +33,12 @@ public class WebSocketBroadcaster {
                 destination, event.getOrderId(), event.getNewStatus());
 
         messagingTemplate.convertAndSend(destination, event);
+    }
+
+    public void broadcastPriceUpdate(PriceUpdatedEvent event) {
+        messagingTemplate.convertAndSend(
+                "/topic/bags/" + event.getBagId() + "/price",
+                event
+        );
     }
 }

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Component;
+import com.smartfood.notification_service.event.PriceUpdatedEvent;
 
 @Slf4j
 @Component
@@ -36,6 +37,10 @@ public class RedisMessageSubscriber implements MessageListener {
                 OrderStatusChangedEvent event = objectMapper
                         .readValue(body, OrderStatusChangedEvent.class);
                 webSocketBroadcaster.broadcastOrderUpdate(event);
+            } else if (channel.equals("price-updates")) {
+                PriceUpdatedEvent event = objectMapper
+                        .readValue(body, PriceUpdatedEvent.class);
+                webSocketBroadcaster.broadcastPriceUpdate(event);
             }
 
         } catch (Exception e) {
