@@ -27,6 +27,7 @@ public class RedisConfig {
         container.setConnectionFactory(connectionFactory);
         container.addMessageListener(listenerAdapter, new PatternTopic("inventory-updates"));
         container.addMessageListener(listenerAdapter, new PatternTopic("order-status-updates"));
+        container.addMessageListener(listenerAdapter, new PatternTopic("price-updates"));
         return container;
     }
 
