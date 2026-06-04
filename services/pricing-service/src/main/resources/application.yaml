@@ -37,3 +37,10 @@ app:
   pricing:
     schedule: "0 */5 * * * *"        # every 5 minutes
     mcp-url: ${MCP_AI_AGENT_BASE_URL:http://localhost:8000}/mcp/tools/call
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
