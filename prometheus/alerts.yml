@@ -1,0 +1,9 @@
+groups:
+  - name: order_alerts
+    rules:
+      - alert: OrderFailure
+        expr: rate(orders_failed_total[1m]) > 0
+        for: 1m
+        annotations:
+          summary: "Order creation is failing"
+          description: "Orders failed in last minute"
