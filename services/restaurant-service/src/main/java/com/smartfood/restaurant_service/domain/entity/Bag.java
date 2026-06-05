@@ -51,6 +51,12 @@ public class Bag {
     @Builder.Default
     private BagStatus status = BagStatus.AVAILABLE;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     /*
      * @ManyToOne — many bags belong to one restaurant.
      * fetch = FetchType.LAZY — don't load the full Restaurant object

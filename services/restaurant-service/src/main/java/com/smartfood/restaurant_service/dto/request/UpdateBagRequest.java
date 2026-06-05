@@ -24,6 +24,10 @@ public class UpdateBagRequest {
     @Digits(integer = 8, fraction = 2)
     private BigDecimal originalPrice;
 
+    // no @NotNull because partial update is allowed; if null, keep existing
+    private Double latitude;
+    private Double longitude;
+
     @DecimalMin(value = "0.0", inclusive = false)
     @Digits(integer = 8, fraction = 2)
     private BigDecimal discountedPrice;

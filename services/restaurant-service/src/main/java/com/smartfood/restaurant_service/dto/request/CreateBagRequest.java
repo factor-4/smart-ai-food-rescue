@@ -26,6 +26,12 @@ public class CreateBagRequest {
     @Digits(integer = 8, fraction = 2, message = "Price format invalid")
     private BigDecimal originalPrice;
 
+    @NotNull(message = "Latitude is required")
+    private Double latitude;
+
+    @NotNull(message = "Longitude is required")
+    private Double longitude;
+
     @NotNull(message = "Discounted price is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Discounted price must be greater than 0")
     @Digits(integer = 8, fraction = 2, message = "Discounted price format invalid")

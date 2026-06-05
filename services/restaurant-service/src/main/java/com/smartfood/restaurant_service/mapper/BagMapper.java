@@ -18,6 +18,8 @@ public class BagMapper {
                 .discountedPrice(request.getDiscountedPrice())
                 .quantity(request.getQuantity())
                 .pickupTime(request.getPickupTime())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
                 .restaurant(restaurant)
                 .build();
     }
@@ -31,6 +33,8 @@ public class BagMapper {
                 .discountedPrice(bag.getDiscountedPrice())
                 .quantity(bag.getQuantity())
                 .pickupTime(bag.getPickupTime())
+                .latitude(bag.getLatitude())
+                .longitude(bag.getLongitude())
                 .status(bag.getStatus())
                 .restaurantId(bag.getRestaurant().getId())
                 .restaurantName(bag.getRestaurant().getName())
@@ -45,6 +49,8 @@ public class BagMapper {
         if (request.getOriginalPrice() != null) bag.setOriginalPrice(request.getOriginalPrice());
         if (request.getDiscountedPrice() != null) bag.setDiscountedPrice(request.getDiscountedPrice());
         if (request.getQuantity() != null) bag.setQuantity(request.getQuantity());
+        if (request.getLatitude() != null) bag.setLatitude(request.getLatitude());
+        if (request.getLongitude() != null) bag.setLongitude(request.getLongitude());
         if (request.getPickupTime() != null) bag.setPickupTime(request.getPickupTime());
         if (request.getStatus() != null) bag.setStatus(request.getStatus());
     }
