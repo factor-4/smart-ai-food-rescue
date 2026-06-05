@@ -12,6 +12,7 @@ interface BagLocation {
 
 interface BagMapProps {
   bags: BagLocation[];
+  center: { lat: number; lng: number };
 }
 
 // Helper component to move the map view when props change
@@ -21,9 +22,9 @@ function ChangeView({ center }: { center: LatLngExpression }) {
   return null;
 }
 
-export function BagMap({ bags }: BagMapProps) {
-  const defaultCenter: LatLngExpression = [60.1695, 24.9354]; // Helsinki
-  const [center, setCenter] = useState<LatLngExpression>(defaultCenter);
+export function BagMap({ bags, center }: BagMapProps) {
+  const defaultCenter: LatLngExpression = [center.lat, center.lng];
+
 
   // In a later step,  use geolocation to update center
   return (
@@ -36,7 +37,7 @@ export function BagMap({ bags }: BagMapProps) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <ChangeView center={center} />
+      <ChangeView center={defaultCenter} />
       {bags.map((bag) => (
         <Marker key={bag.id} position={[bag.latitude, bag.longitude]}>
           <Popup>
