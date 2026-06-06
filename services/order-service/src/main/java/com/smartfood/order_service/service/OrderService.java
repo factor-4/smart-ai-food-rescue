@@ -64,6 +64,7 @@ public class OrderService {
                     .idempotencyKey(request.getIdempotencyKey())
                     .userId(request.getUserId())
                     .bagId(request.getBagId())
+                    .restaurantId(bagInfo.getRestaurantId())
                     .quantity(request.getQuantity())
                     .totalPrice(total)
                     .status(OrderStatus.PENDING)

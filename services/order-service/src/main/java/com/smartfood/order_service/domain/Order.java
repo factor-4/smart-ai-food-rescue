@@ -24,6 +24,9 @@ public class Order {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(name = "restaurant_id")
+    private Long restaurantId;
+
     @Column(nullable = false)
     private Long bagId;
 
