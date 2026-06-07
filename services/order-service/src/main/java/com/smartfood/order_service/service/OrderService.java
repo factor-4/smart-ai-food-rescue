@@ -1,10 +1,10 @@
 package com.smartfood.order_service.service;
 
-import com.smartfood.order_service.client.RestaurantClient;
 import com.smartfood.order_service.client.RestaurantServiceClient;
 import com.smartfood.order_service.domain.Order;
 import com.smartfood.order_service.domain.OrderStatus;
 import com.smartfood.order_service.dto.BagInfo;
+import com.smartfood.order_service.dto.response.DashboardResponse;
 import com.smartfood.order_service.dto.request.CreateOrderRequest;
 import com.smartfood.order_service.dto.response.OrderResponse;
 import com.smartfood.order_service.event.InventoryUpdatedEvent;
@@ -16,10 +16,12 @@ import com.smartfood.order_service.repository.OrderRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -127,5 +129,37 @@ public class OrderService {
                 .stream()
                 .map(OrderResponse::fromEntity)
                 .toList();
+    }
+
+    // ===================== DASHBOARD =====================
+    public DashboardResponse getDashboard(Long restaurantId) {
+        LocalDateTime since = LocalDateTime.now().minusDays(7).toLocalDate().atStartOfDay();
+
+        // Daily sales
+        List<Object[]> dailyRows = orderRepository.findDailySales(restaurantId, since);
+        List<DashboardResponse.DailySale> sales = dailyRows.stream()
+                .map(row -> DashboardResponse.DailySale.builder()
+                        .date(row[0].toString())
+                        .count(((Number) row[1]).longValue())
+                        .build())
+                .toList();
+
+        // Total revenue
+        BigDecimal totalRevenue = orderRepository.totalRevenueLast7Days(restaurantId, since);
+
+        // Popular bags (top 5)
+        List<Object[]> bagRows = orderRepository.findTopBags(restaurantId, PageRequest.of(0, 5));
+        List<DashboardResponse.PopularBag> popularBags = bagRows.stream()
+                .map(row -> DashboardResponse.PopularBag.builder()
+                        .bagId(((Number) row[0]).longValue())
+                        .orderCount(((Number) row[1]).longValue())
+                        .build())
+                .toList();
+
+        return DashboardResponse.builder()
+                .sales(sales)
+                .totalRevenue(totalRevenue)
+                .popularBags(popularBags)
+                .build();
     }
 }

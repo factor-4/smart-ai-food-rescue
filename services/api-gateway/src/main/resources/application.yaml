@@ -39,6 +39,11 @@ spring:
               uri: http://localhost:8000
               predicates:
                 - Path=/api/recommendations/**, /api/pricing/**, /mcp/**
+
+            - id: order-service-dashboard
+              uri: lb://order-service
+              predicates:
+                - Path=/api/dashboard/**
           globalcors:
             cors-configurations:
               '[/**]':
