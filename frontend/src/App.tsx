@@ -1,11 +1,19 @@
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Checkout from './pages/Checkout';
 import OrderHistory from './pages/OrderHistory';
 import { useAuthStore } from './stores/authStore';
 import { RecommendationCarousel } from './components/RecommendationCarousel';
+import DashboardPage from './pages/DashboardPage';
 import MapPage from './pages/MapPage';
+
+
+function DashboardWrapper() {
+  
+  const { restaurantId } = useParams<{ restaurantId: string }>();
+  return <DashboardPage restaurantId={Number(restaurantId)} />;
+}
 
 function Navbar() {
   const location = useLocation();
@@ -15,6 +23,7 @@ function Navbar() {
     { to: '/checkout', label: 'Checkout' },
     { to: '/orders', label: 'Orders' },
     { to: '/map', label: 'Map' },
+    { to: '/dashboard/5', label: 'Dashboard' },   // <-- added for testing (you can change the ID later)
     { to: '/login', label: 'Login' },
     { to: '/register', label: 'Register' },
   ];
@@ -135,6 +144,7 @@ function AppContent() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/map" element={<MapPage />} />
+          <Route path="/dashboard/:restaurantId" element={<DashboardWrapper />} />  {/* NEW */}
           <Route
             path="/"
             element={
