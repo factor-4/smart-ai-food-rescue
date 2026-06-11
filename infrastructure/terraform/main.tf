@@ -1,3 +1,5 @@
+
+
 terraform {
   required_providers {
     azurerm = {
@@ -81,3 +83,5 @@ output "storage_container_name" {
 output "key_vault_uri" {
   value = azurerm_key_vault.kv.vault_uri
 }
+
+
