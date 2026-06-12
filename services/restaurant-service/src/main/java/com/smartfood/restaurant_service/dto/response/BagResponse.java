@@ -21,9 +21,10 @@ public class BagResponse {
     private LocalDateTime pickupTime;
     private BagStatus status;
     private Long restaurantId;      // client needs to know which restaurant
-    private String restaurantName;  // convenient — saves an extra API call
+    private String restaurantName;  // convenient saves an extra API call
     private Double latitude;
     private Double longitude;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String imageUrl;
 }

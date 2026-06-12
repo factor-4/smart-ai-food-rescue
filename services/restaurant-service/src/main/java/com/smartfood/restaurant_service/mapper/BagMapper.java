@@ -36,6 +36,7 @@ public class BagMapper {
                 .latitude(bag.getLatitude())
                 .longitude(bag.getLongitude())
                 .status(bag.getStatus())
+                .imageUrl(bag.getImageUrl())
                 .restaurantId(bag.getRestaurant().getId())
                 .restaurantName(bag.getRestaurant().getName())
                 .createdAt(bag.getCreatedAt())

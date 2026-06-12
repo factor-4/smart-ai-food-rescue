@@ -30,6 +30,9 @@ public class Bag {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal originalPrice;
