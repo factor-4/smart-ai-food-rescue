@@ -2,6 +2,7 @@ package com.smartfood.restaurant_service.storage;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +19,7 @@ public class CloudinaryFileStorageService implements FileStorageService {
     }
 
     @Override
+    @CircuitBreaker(name = "cloudinaryUpload", fallbackMethod = "storeFallback")
     public String store(MultipartFile file, String fileName) {
         try {
             String publicId = fileName.contains(".")
@@ -36,6 +38,11 @@ public class CloudinaryFileStorageService implements FileStorageService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload image to Cloudinary", e);
         }
+    }
+
+    public String storeFallback(MultipartFile file, String fileName, Throwable t) {
+        // In a production app, log the error and alert the team
+        return "/images/no-image-available.png";
     }
 
     @Override
