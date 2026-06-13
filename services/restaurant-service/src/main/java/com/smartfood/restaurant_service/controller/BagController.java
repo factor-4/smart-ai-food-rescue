@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -120,5 +121,17 @@ public class BagController {
     @GetMapping("/api/bags/{bagId}")
     public ResponseEntity<BagResponse> getBag(@PathVariable Long bagId) {
         return ResponseEntity.ok(bagService.getBagById(bagId));
+    }
+
+
+
+    @PostMapping("/api/restaurants/{restaurantId}/bags/{bagId}/image")
+    public ResponseEntity<BagResponse> uploadBagImage(
+            @PathVariable Long restaurantId,
+            @PathVariable Long bagId,
+            @RequestParam("file") MultipartFile file) {
+
+        BagResponse response = bagService.uploadImage(restaurantId, bagId, file);
+        return ResponseEntity.ok(response);
     }
 }

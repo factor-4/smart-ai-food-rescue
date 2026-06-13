@@ -34,4 +34,6 @@ public interface BagRepository extends JpaRepository<Bag, Long> {
 
     @Query("SELECT b FROM Bag b WHERE b.restaurant.ownerId = :ownerId")
     List<Bag> findAllBagsByOwnerId(@Param("ownerId") Long ownerId);
+
+
 }

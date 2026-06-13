@@ -11,11 +11,13 @@ import com.smartfood.restaurant_service.exception.UnauthorizedException;
 import com.smartfood.restaurant_service.mapper.BagMapper;
 import com.smartfood.restaurant_service.repository.BagRepository;
 import com.smartfood.restaurant_service.repository.RestaurantRepository;
+import com.smartfood.restaurant_service.storage.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,6 +28,8 @@ public class BagService {
     private final BagRepository bagRepository;
     private final RestaurantRepository restaurantRepository;
     private final BagMapper bagMapper;
+    private final FileStorageService fileStorageService;
+
 
     @Transactional
     public BagResponse createBag(
@@ -166,6 +170,33 @@ public class BagService {
     public BagResponse getBagById(Long bagId) {
         Bag bag = bagRepository.findById(bagId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bag not found"));
+        return bagMapper.toResponse(bag);
+    }
+
+
+
+    public BagResponse uploadImage(Long restaurantId, Long bagId, MultipartFile file) {
+        // 1. Find the bag and verify it belongs to the restaurant
+        Bag bag = bagRepository.findByIdAndRestaurantId(bagId, restaurantId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Bag not found or does not belong to this restaurant"));
+
+        // 2. Build a unique file name ("bag-24-1685432100.jpg")
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+        }
+        String fileName = "bag-" + bagId + "-" + System.currentTimeMillis() + extension;
+
+        // 3. Upload via the storage service (Cloudinary)
+        String imageUrl = fileStorageService.store(file, fileName);
+
+        // 4. Save the URL in the bag
+        bag.setImageUrl(imageUrl);
+        bagRepository.save(bag);
+
+        // 5. Return the updated bag as a response
         return bagMapper.toResponse(bag);
     }
 }
