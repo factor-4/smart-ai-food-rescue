@@ -8,6 +8,7 @@ import DashboardWrapper from './components/DashboardWrapper';
 import MapPage from './pages/MapPage';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
+import OwnerBagsPage from './pages/OwnerBagsPage';
 
 
 
@@ -36,6 +37,7 @@ function AppContent() {
               )
             }
           />
+          <Route path="/owner/bags" element={<OwnerBagsPage />} />
         </Routes>
       </main>
     </div>
