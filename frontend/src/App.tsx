@@ -11,6 +11,14 @@ import HomePage from './pages/HomePage';
 import OwnerBagsPage from './pages/OwnerBagsPage';
 
 
+function OwnerGuard() {
+  const user = useAuthStore((state) => state.user);
+  console.log("user ", user);
+  if (!user || user.role !== 'ROLE_OWNER') {
+    return <Navigate to="/login" replace />;
+  }
+  return <OwnerBagsPage />;
+}
 
 function AppContent() {
   const user = useAuthStore((state) => state.user);
@@ -26,7 +34,7 @@ function AppContent() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/map" element={<MapPage />} />
-          <Route path="/dashboard/:restaurantId" element={<DashboardWrapper />} />  {/* NEW */}
+          <Route path="/dashboard/:restaurantId" element={<DashboardWrapper />} />  
           <Route
             path="/"
             element={
@@ -37,7 +45,7 @@ function AppContent() {
               )
             }
           />
-          <Route path="/owner/bags" element={<OwnerBagsPage />} />
+          <Route path="/owner/bags" element={<OwnerGuard />} />
         </Routes>
       </main>
     </div>
