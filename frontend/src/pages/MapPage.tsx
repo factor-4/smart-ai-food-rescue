@@ -11,12 +11,11 @@ interface BagWithLocation {
   discountedPrice: number;
 }
 
-// Helper function to calculate distance between two GPS points (Haversine formula)
 function getDistanceInKm(
   lat1: number, lng1: number,
   lat2: number, lng2: number
 ): number {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
@@ -43,14 +42,13 @@ export default function MapPage() {
 
   let geoBags = (bags ?? []).filter((b) => b.latitude && b.longitude);
 
-  // If we have user location, filter bags within 3 km
   if (location) {
     geoBags = geoBags.filter((bag) => {
       const distance = getDistanceInKm(
         location.lat, location.lng,
         bag.latitude, bag.longitude
       );
-      return distance <= 3; // only show bags within 3 km
+      return distance <= 3;
     });
   }
 
@@ -59,8 +57,8 @@ export default function MapPage() {
     : { lat: 60.1695, lng: 24.9354 }; // default Helsinki
 
   return (
-    <div className="w-full h-screen">
-      <h1 className="text-2xl font-bold p-4">
+    <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto space-y-4">
+      <h1 className="text-2xl font-bold">
         Nearby Rescue Bags
         {geoError && (
           <span className="text-sm text-gray-500 ml-2">
@@ -68,7 +66,11 @@ export default function MapPage() {
           </span>
         )}
       </h1>
-      <BagMap bags={geoBags} center={mapCenter} />
+
+      {/* Map container – responsive height */}
+      <div className="w-full h-[50vh] sm:h-[60vh] md:h-[70vh] rounded-xl overflow-hidden border border-slate-200">
+        <BagMap bags={geoBags} center={mapCenter} />
+      </div>
     </div>
   );
 }
