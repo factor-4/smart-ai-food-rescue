@@ -41,26 +41,26 @@ export default function Checkout() {
       }),
   });
 
-  if (isLoading) return <p>Loading bags…</p>;
-  if (!userId) return <p>Please log in first.</p>;
+  if (isLoading) return <p className="p-4">Loading bags…</p>;
+  if (!userId) return <p className="p-4">Please log in first.</p>;
 
   return (
-    <div className="max-w-xl mx-auto p-4 space-y-4">
+    <div className="max-w-xl mx-auto px-4 sm:px-0 py-6 space-y-6">
       <h1 className="text-2xl font-bold">Checkout</h1>
 
       {lastNotification && (
-        <div className="bg-blue-50 border border-blue-200 rounded p-3">
+        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
           <p className="text-blue-800 font-medium">
             📦 Order #{lastNotification.orderId}: {lastNotification.message}
           </p>
-          <p className="text-blue-600 text-sm">
+          <p className="text-blue-600 text-xs mt-1">
             Status: {lastNotification.newStatus}
           </p>
         </div>
       )}
 
-      <div className="space-y-2">
-        <label className="block font-medium">Select a bag</label>
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-gray-700">Select a bag</label>
         {bags?.map((bag) => (
           <BagCard
             key={bag.id}
@@ -72,29 +72,32 @@ export default function Checkout() {
       </div>
 
       {selectedBagId && (
-        <div className="space-y-2">
-          <label className="block font-medium">Quantity</label>
-          <input
-            type="number"
-            min={1}
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            className="border rounded p-2 w-20"
-          />
-          <Button
-            onClick={() => orderMutation.mutate()}
-            disabled={orderMutation.isPending}
-          >
-            {orderMutation.isPending ? 'Placing order…' : 'Place Order'}
-          </Button>
+        <div className="space-y-4 bg-gray-50 border rounded-lg p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <label className="text-sm font-medium text-gray-700">Quantity</label>
+            <input
+              type="number"
+              min={1}
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+              className="border rounded p-2 w-20 text-sm"
+            />
+            <Button
+              onClick={() => orderMutation.mutate()}
+              disabled={orderMutation.isPending}
+              className="w-full sm:w-auto"
+            >
+              {orderMutation.isPending ? 'Placing order…' : 'Place Order'}
+            </Button>
+          </div>
 
           {orderMutation.isSuccess && (
-            <p className="text-green-600">
-              Order placed! ID: {orderMutation.data?.data?.id}
+            <p className="text-green-600 text-sm">
+              ✅ Order placed! ID: {orderMutation.data?.data?.id}
             </p>
           )}
           {orderMutation.isError && (
-            <p className="text-red-600">
+            <p className="text-red-600 text-sm">
               Error: {orderMutation.error?.message}
             </p>
           )}
@@ -126,56 +129,45 @@ function BagCard({
 
   const isLive = stockConnected && priceConnected;
 
-  console.log('BagCard render ', bag.id, bag.originalPrice, currentDiscount, discountPercentage);
   return (
     <Card
-      className={`cursor-pointer border-2 ${isSelected ? 'border-blue-500' : 'border-transparent'}`}
+      className={`cursor-pointer border-2 transition-colors ${
+        isSelected ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'
+      }`}
       onClick={onSelect}
     >
-      <CardContent>
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="font-semibold">{bag.name}</p>
-
-            <p className="text-sm">
+      <CardContent className="p-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-sm sm:text-base truncate">{bag.name}</p>
+            <p className="text-xs sm:text-sm mt-1">
               Price:{' '}
               {discountPercentage ? (
                 <>
                   <span className="line-through text-gray-400 mr-1">
-                    ${bag.originalPrice.toFixed(2)}
+                    €{bag.originalPrice.toFixed(2)}
                   </span>
                   <span className="text-green-600 font-bold">
-                    ${liveDiscountedPrice.toFixed(2)}
+                    €{liveDiscountedPrice.toFixed(2)}
                   </span>
                   <span className="text-green-600 text-xs ml-1">
-                    ({discountPercentage}% off)
+                    (-{discountPercentage}%)
                   </span>
                 </>
               ) : (
-                <span>${liveDiscountedPrice.toFixed(2)}</span>
+                <span>€{liveDiscountedPrice.toFixed(2)}</span>
               )}
             </p>
           </div>
 
-          <div className="text-right">
-            <p className="text-xs">
-              {isLive ? '🟢 Live' : '🔴 Offline'}
-            </p>
-
-            <p className="text-sm font-medium">
-              Stock: {quantity}
-            </p>
-
+          <div className="flex sm:flex-col items-center sm:items-end gap-2 text-xs">
+            <span>{isLive ? '🟢 Live' : '🔴 Offline'}</span>
+            <span className="font-medium">Stock: {quantity}</span>
             {quantity > 0 && quantity < 3 && (
-              <p className="text-orange-500 text-xs font-bold">
-                ⚠️ Only a few left!
-              </p>
+              <span className="text-orange-500 font-bold">⚠️ Low</span>
             )}
-
             {status === 'SOLD_OUT' && (
-              <p className="text-red-600 text-xs font-bold">
-                SOLD OUT
-              </p>
+              <span className="text-red-600 font-bold">SOLD OUT</span>
             )}
           </div>
         </div>
