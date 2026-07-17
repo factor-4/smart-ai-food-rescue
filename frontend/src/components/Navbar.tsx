@@ -6,24 +6,28 @@ import { Menu, X } from 'lucide-react';
 export default function Navbar() {
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Base links – visible to everyone
-  const links = [
-    { to: '/', label: 'Home' },
-    { to: '/checkout', label: 'Checkout' },
-    { to: '/orders', label: 'Orders' },
-    { to: '/map', label: 'Map' },
-    { to: '/login', label: 'Login' },
-    { to: '/register', label: 'Register' },
-  ];
+  // Build links dynamically based on who is logged in
+  const links: { to: string; label: string }[] = [];
 
-  // Insert "My Bags" for owners before "Login"
+  // Always visible
+  links.push({ to: '/', label: 'Home' });
+  links.push({ to: '/checkout', label: 'Checkout' });
+  links.push({ to: '/orders', label: 'Orders' });
+  links.push({ to: '/map', label: 'Map' });
+
+  // Owner‑only links
   if (user?.role === 'ROLE_OWNER') {
-    const loginIndex = links.findIndex((l) => l.to === '/login');
-    if (loginIndex !== -1) {
-      links.splice(loginIndex, 0, { to: '/owner/bags', label: 'My Bags' });
-    }
+    links.push({ to: '/owner/bags', label: 'My Bags' });
+    links.push({ to: '/dashboard/5', label: 'Dashboard' }); // change ID later if needed
+  }
+
+  // Login / Register only for guests
+  if (!user) {
+    links.push({ to: '/login', label: 'Login' });
+    links.push({ to: '/register', label: 'Register' });
   }
 
   const linkClasses = (path: string) =>
@@ -55,9 +59,21 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          {/* Logout button shown only when logged in */}
+          {user && (
+            <button
+              onClick={() => {
+                logout();
+                window.location.href = '/';
+              }}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-white/70 hover:text-slate-900 transition-all duration-200"
+            >
+              Logout
+            </button>
+          )}
         </nav>
 
-        {/* Mobile menu button – visible on small screens */}
+        {/* Mobile menu button */}
         <button
           type="button"
           className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
@@ -82,6 +98,18 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {user && (
+              <button
+                onClick={() => {
+                  logout();
+                  window.location.href = '/';
+                  setMobileMenuOpen(false);
+                }}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-white/70 hover:text-slate-900 transition-all duration-200 text-left"
+              >
+                Logout
+              </button>
+            )}
           </nav>
         </div>
       )}
