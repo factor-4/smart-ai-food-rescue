@@ -105,16 +105,21 @@ export default function HomePage({ user }: { user: any }) {
 
             {/* ───── Recommendation Carousel ───── */}
             <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-slate-800">
-                        Recommended for you
-                    </h2>
-                    <p className="text-sm text-slate-500">
-                        Personalized picks based on your taste
-                    </p>
+                <div className="mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-800">
+                            Recommended for you
+                        </h2>
+                        <p className="text-sm text-slate-500">
+                            Personalized picks based on your taste
+                        </p>
+                    </div>
+                    {/* purely decorative */}
+                    <span className="hidden sm:inline-block text-2xl opacity-40">✨</span>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50 p-1">
+                {/* Carousel container with softer inner background */}
+                <div className="overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 p-4">
                     <RecommendationCarousel userId={user.id} />
                 </div>
             </section>
