@@ -50,44 +50,55 @@ export function RecommendationCarousel({ userId }: { userId: number }) {
 
   if (!recommendedBags || recommendedBags.length === 0) return null;
 
+  // Only render when there are recommended bags
+  if (!recommendedBags || recommendedBags.length === 0) return null;
+
   return (
-    <div className="flex gap-4 overflow-x-auto pb-2">
-      {recommendedBags.map((bag) => (
-        <div
-          key={bag.id}
-          onClick={() => handleClick(bag.id)}
-          className="min-w-[200px] max-w-[200px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm shrink-0 cursor-pointer hover:shadow-md transition-shadow"
-        >
-          {/* Image */}
-          <div className="mb-2 h-28 w-full rounded-lg bg-slate-100 overflow-hidden">
-            {bag.imageUrl ? (
-              <img
-                src={bag.imageUrl}
-                alt={bag.name}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-3xl text-slate-300">
-                🥬
-              </div>
-            )}
+    <div className="relative">
+      {/* Left fade overlay */}
+      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-amber-50 via-amber-50/80 to-transparent pointer-events-none z-10 rounded-l-xl" />
+      {/* Right fade overlay */}
+      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-amber-50 via-amber-50/80 to-transparent pointer-events-none z-10 rounded-r-xl" />
+
+      {/* Scrollable cards container */}
+      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scroll-px-4 px-4">
+        {recommendedBags.map((bag) => (
+          <div
+            key={bag.id}
+            onClick={() => handleClick(bag.id)}
+            className="min-w-[200px] max-w-[200px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm shrink-0 cursor-pointer hover:shadow-md transition-shadow"
+          >
+            {/* Image */}
+            <div className="mb-2 h-28 w-full rounded-lg bg-slate-100 overflow-hidden">
+              {bag.imageUrl ? (
+                <img
+                  src={bag.imageUrl}
+                  alt={bag.name}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-3xl text-slate-300">
+                  🥬
+                </div>
+              )}
+            </div>
+
+            {/* Name */}
+            <p className="text-sm font-medium text-slate-800 truncate">
+              {bag.name}
+            </p>
+
+            {/* Price */}
+            <p className="mt-1 text-sm font-bold text-green-700">
+              €
+              {bag.discountedPrice != null
+                ? bag.discountedPrice.toFixed(2)
+                : bag.originalPrice.toFixed(2)}
+            </p>
           </div>
-
-          {/* Name */}
-          <p className="text-sm font-medium text-slate-800 truncate">
-            {bag.name}
-          </p>
-
-          {/* Price */}
-          <p className="mt-1 text-sm font-bold text-green-700">
-            €
-            {bag.discountedPrice != null
-              ? bag.discountedPrice.toFixed(2)
-              : bag.originalPrice.toFixed(2)}
-          </p>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
