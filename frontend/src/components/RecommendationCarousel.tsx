@@ -11,7 +11,7 @@ interface BagResponse {
 
 export function RecommendationCarousel({ userId }: { userId: number }) {
   // 1. Fetch recommended bag IDs
-  const { data: bagIds } = useQuery<number[]>({
+  const { data: bagIds, isLoading: idsLoading } = useQuery<number[]>({
     queryKey: ["recommendations", userId],
     queryFn: () =>
       api
@@ -21,7 +21,7 @@ export function RecommendationCarousel({ userId }: { userId: number }) {
   });
 
   // 2. Fetch all bags (for image/price details) – cached for 10 minutes
-  const { data: allBags } = useQuery<BagResponse[]>({
+  const { data: allBags, isLoading: bagsLoading } = useQuery<BagResponse[]>({
     queryKey: ["bags-for-carousel"],
     queryFn: () =>
       api.get("/api/bags?size=1000").then((res) => res.data.content ?? res.data),
@@ -48,11 +48,34 @@ export function RecommendationCarousel({ userId }: { userId: number }) {
     }
   };
 
-  if (!recommendedBags || recommendedBags.length === 0) return null;
+  // Still loading – show a skeleton row of placeholder cards
+  if (idsLoading || bagsLoading) {
+    return (
+      <div className="flex gap-4 overflow-x-auto pb-2 px-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="min-w-[200px] max-w-[200px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm shrink-0 animate-pulse"
+          >
+            <div className="mb-2 h-28 w-full rounded-lg bg-slate-100" />
+            <div className="h-4 w-3/4 rounded bg-slate-100" />
+            <div className="mt-1 h-4 w-1/2 rounded bg-slate-100" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  // Only render when there are recommended bags
-  if (!recommendedBags || recommendedBags.length === 0) return null;
+  // Both queries finished, but no recommendations – show a friendly empty state
+  if (!recommendedBags || recommendedBags.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-10 text-sm text-slate-400">
+        No personalized recommendations yet. Keep browsing!
+      </div>
+    );
+  }
 
+  // Success – render the real carousel
   return (
     <div className="relative">
       {/* Left fade overlay */}
@@ -60,7 +83,6 @@ export function RecommendationCarousel({ userId }: { userId: number }) {
       {/* Right fade overlay */}
       <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-amber-50 via-amber-50/80 to-transparent pointer-events-none z-10 rounded-r-xl" />
 
-      {/* Scrollable cards container */}
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scroll-px-4 px-4">
         {recommendedBags.map((bag) => (
           <div
@@ -68,7 +90,6 @@ export function RecommendationCarousel({ userId }: { userId: number }) {
             onClick={() => handleClick(bag.id)}
             className="min-w-[200px] max-w-[200px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm shrink-0 cursor-pointer hover:shadow-md transition-shadow"
           >
-            {/* Image */}
             <div className="mb-2 h-28 w-full rounded-lg bg-slate-100 overflow-hidden">
               {bag.imageUrl ? (
                 <img
@@ -83,13 +104,7 @@ export function RecommendationCarousel({ userId }: { userId: number }) {
                 </div>
               )}
             </div>
-
-            {/* Name */}
-            <p className="text-sm font-medium text-slate-800 truncate">
-              {bag.name}
-            </p>
-
-            {/* Price */}
+            <p className="text-sm font-medium text-slate-800 truncate">{bag.name}</p>
             <p className="mt-1 text-sm font-bold text-green-700">
               €
               {bag.discountedPrice != null
