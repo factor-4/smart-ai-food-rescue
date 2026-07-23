@@ -3,6 +3,7 @@ import axios from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { jwtDecode } from 'jwt-decode';
 import { ImageUpload } from '../components/ImageUpload';
+import CreateRestaurantForm from '../components/CreateRestaurantForm';
 import { useState } from 'react';
 
 interface RestaurantResponse {
@@ -25,7 +26,7 @@ export default function OwnerBagsPage() {
     const payload = token ? jwtDecode<{ userId: number }>(token) : null;
     const ownerId = payload?.userId;
 
-    const { data: restaurants, isLoading: restaurantsLoading } = useQuery<RestaurantResponse[]>({
+    const { data: restaurants, isLoading: restaurantsLoading, refetch: refetchRestaurants } = useQuery<RestaurantResponse[]>({
         queryKey: ['owner-restaurants', ownerId],
         queryFn: () => axios.get('/api/restaurants/my').then((res) => res.data),
         enabled: !!ownerId,
@@ -37,6 +38,9 @@ export default function OwnerBagsPage() {
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-8">
             <h1 className="text-2xl font-bold">My Bags</h1>
+            <div className="flex justify-end">
+                <CreateRestaurantForm onCreated={() => refetchRestaurants()} />
+            </div>
             {restaurants?.length === 0 && (
                 <p className="text-gray-500">You don't have any restaurants yet.</p>
             )}
