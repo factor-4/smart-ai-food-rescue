@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/authStore';
 import { jwtDecode } from 'jwt-decode';
 import { ImageUpload } from '../components/ImageUpload';
 import CreateRestaurantForm from '../components/CreateRestaurantForm';
+import BagForm from '../components/BagForm';
 import { useState } from 'react';
 
 interface RestaurantResponse {
@@ -52,19 +53,69 @@ export default function OwnerBagsPage() {
 }
 
 function RestaurantBagList({ restaurant }: { restaurant: RestaurantResponse }) {
-    const { data: bags, isLoading, isError } = useQuery<BagResponse[]>({
+    const { data: bags, isLoading, isError, refetch: refetchBags } = useQuery<BagResponse[]>({
         queryKey: ['bags', restaurant.id],
         queryFn: () => axios.get(`/api/restaurants/${restaurant.id}/bags`).then((res) => res.data.content ?? res.data),
     });
 
     const [imageUrls, setImageUrls] = useState<Record<number, string | null>>({});
+    const [showBagForm, setShowBagForm] = useState(false);
+    const [editingBag, setEditingBag] = useState<BagResponse | null>(null);
+
+    const handleDelete = async (bagId: number, bagName: string) => {
+        if (!confirm(`Delete bag "${bagName}"?`)) return;
+        try {
+            await axios.delete(`/api/restaurants/${restaurant.id}/bags/${bagId}`);
+            refetchBags();
+        } catch (err) {
+            alert('Failed to delete bag');
+        }
+    };
 
     if (isLoading) return <p>Loading bags for {restaurant.name}…</p>;
     if (isError) return <p className="text-red-500">Failed to load bags for {restaurant.name}.</p>;
 
     return (
         <div>
-            <h2 className="text-lg font-semibold mb-4">{restaurant.name}</h2>
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">{restaurant.name}</h2>
+                <button
+                    onClick={() => { setEditingBag(null); setShowBagForm(true); }}
+                    className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                >
+                    + Add Bag
+                </button>
+            </div>
+
+            {showBagForm && (
+                <div className="mb-6">
+                    <BagForm
+                        restaurantId={restaurant.id}
+                        initialData={
+                            editingBag
+                                ? {
+                                    id: editingBag.id,
+                                    name: editingBag.name,
+                                    originalPrice: editingBag.originalPrice,
+                                    discountedPrice: editingBag.discountedPrice,
+                                    quantity: editingBag.quantity,
+                                    // other fields omitted – they won't be overwritten
+                                }
+                                : undefined
+                        }
+                        onSave={() => {
+                            setShowBagForm(false);
+                            setEditingBag(null);
+                            refetchBags();
+                        }}
+                        onCancel={() => {
+                            setShowBagForm(false);
+                            setEditingBag(null);
+                        }}
+                    />
+                </div>
+            )}
+
             <div className="grid gap-4">
                 {bags?.map((bag) => {
                     const displayedImageUrl = imageUrls[bag.id] !== undefined ? imageUrls[bag.id] : bag.imageUrl;
@@ -98,6 +149,22 @@ function RestaurantBagList({ restaurant }: { restaurant: RestaurantResponse }) {
                                     setImageUrls((prev) => ({ ...prev, [bag.id]: newUrl }));
                                 }}
                             />
+
+                            {/* Edit / Delete buttons */}
+                            <div className="flex flex-col gap-1 ml-2">
+                                <button
+                                    onClick={() => { setEditingBag(bag); setShowBagForm(true); }}
+                                    className="text-xs text-blue-600 hover:underline"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(bag.id, bag.name)}
+                                    className="text-xs text-red-600 hover:underline"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     );
                 })}
