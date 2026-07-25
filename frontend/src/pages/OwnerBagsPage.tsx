@@ -5,6 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import { ImageUpload } from '../components/ImageUpload';
 import CreateRestaurantForm from '../components/CreateRestaurantForm';
 import BagForm from '../components/BagForm';
+import ConfirmModal from '../components/ConfirmModal';
 import { useState } from 'react';
 
 interface RestaurantResponse {
@@ -62,13 +63,22 @@ function RestaurantBagList({ restaurant }: { restaurant: RestaurantResponse }) {
     const [showBagForm, setShowBagForm] = useState(false);
     const [editingBag, setEditingBag] = useState<BagResponse | null>(null);
 
-    const handleDelete = async (bagId: number, bagName: string) => {
-        if (!confirm(`Delete bag "${bagName}"?`)) return;
+    // ---- Custom delete confirmation state ----
+    const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+
+    const handleDeleteRequest = (bagId: number, bagName: string) => {
+        setDeleteTarget({ id: bagId, name: bagName });
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTarget) return;
         try {
-            await axios.delete(`/api/restaurants/${restaurant.id}/bags/${bagId}`);
+            await axios.delete(`/api/restaurants/${restaurant.id}/bags/${deleteTarget.id}`);
             refetchBags();
         } catch (err) {
             alert('Failed to delete bag');
+        } finally {
+            setDeleteTarget(null);
         }
     };
 
@@ -99,7 +109,6 @@ function RestaurantBagList({ restaurant }: { restaurant: RestaurantResponse }) {
                                     originalPrice: editingBag.originalPrice,
                                     discountedPrice: editingBag.discountedPrice,
                                     quantity: editingBag.quantity,
-                                    // other fields omitted – they won't be overwritten
                                 }
                                 : undefined
                         }
@@ -159,7 +168,7 @@ function RestaurantBagList({ restaurant }: { restaurant: RestaurantResponse }) {
                                     Edit
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(bag.id, bag.name)}
+                                    onClick={() => handleDeleteRequest(bag.id, bag.name)}
                                     className="text-xs text-red-600 hover:underline"
                                 >
                                     Delete
@@ -169,6 +178,17 @@ function RestaurantBagList({ restaurant }: { restaurant: RestaurantResponse }) {
                     );
                 })}
             </div>
+
+            {/* Custom delete confirmation modal */}
+            {deleteTarget && (
+                <ConfirmModal
+                    open={!!deleteTarget}
+                    title="Delete Bag"
+                    message={`Are you sure you want to delete "${deleteTarget.name}"?`}
+                    onConfirm={confirmDelete}
+                    onCancel={() => setDeleteTarget(null)}
+                />
+            )}
         </div>
     );
 }
