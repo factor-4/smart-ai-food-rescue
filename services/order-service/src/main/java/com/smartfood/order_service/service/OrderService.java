@@ -4,6 +4,7 @@ import com.smartfood.order_service.client.RestaurantServiceClient;
 import com.smartfood.order_service.domain.Order;
 import com.smartfood.order_service.domain.OrderStatus;
 import com.smartfood.order_service.dto.BagInfo;
+import com.smartfood.order_service.dto.impact.ImpactResponse;
 import com.smartfood.order_service.dto.response.DashboardResponse;
 import com.smartfood.order_service.dto.request.CreateOrderRequest;
 import com.smartfood.order_service.dto.response.OrderResponse;
@@ -160,6 +161,20 @@ public class OrderService {
                 .sales(sales)
                 .totalRevenue(totalRevenue)
                 .popularBags(popularBags)
+                .build();
+    }
+
+
+    public ImpactResponse getUserImpact(Long userId) {
+        Object[] row = orderRepository.getUserImpact(userId).get(0);
+        long count = ((Number) row[0]).longValue();
+        BigDecimal total = (BigDecimal) row[1];
+        // 2.5 kg CO₂ saved per bag (standard average)
+        double co2 = count * 2.5;
+        return ImpactResponse.builder()
+                .mealsSaved(count)
+                .moneySaved(total)
+                .co2PreventedKg(co2)
                 .build();
     }
 }

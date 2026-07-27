@@ -1,5 +1,6 @@
 package com.smartfood.order_service.controller;
 
+import com.smartfood.order_service.dto.impact.ImpactResponse;
 import com.smartfood.order_service.dto.request.CreateOrderRequest;
 import com.smartfood.order_service.dto.response.OrderResponse;
 import com.smartfood.order_service.service.OrderService;
@@ -32,5 +33,10 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getOrdersByUser(@RequestParam Long userId) {
         return ResponseEntity.ok(orderService.getOrdersByUser(userId));
+    }
+
+    @GetMapping("/impact/{userId}")
+    public ResponseEntity<ImpactResponse> getUserImpact(@PathVariable Long userId) {
+        return ResponseEntity.ok(orderService.getUserImpact(userId));
     }
 }

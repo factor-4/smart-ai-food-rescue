@@ -44,4 +44,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "GROUP BY o.bagId " +
             "ORDER BY orderCount DESC")
     List<Object[]> findTopBags(@Param("restaurantId") Long restaurantId, Pageable pageable);
+
+
+    @Query("SELECT COUNT(o), COALESCE(SUM(o.totalPrice), 0) " +
+            "FROM Order o WHERE o.userId = :userId")
+    List<Object[]> getUserImpact(@Param("userId") Long userId);
 }
