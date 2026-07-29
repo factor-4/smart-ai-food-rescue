@@ -21,7 +21,7 @@ export default function Navbar() {
     // Owner‑only links
     if (user?.role === 'ROLE_OWNER') {
         links.push({ to: '/owner/bags', label: 'My Bags' });
-        links.push({ to: '/dashboard/5', label: 'Dashboard' });
+        links.push({ to: '/dashboard', label: 'Dashboard' });
     }
 
     // Login / Register only for guests

@@ -109,7 +109,7 @@ export default function HomePage({ user }: { user: any }) {
                             Personalized picks based on your taste
                         </p>
                     </div>
-                    <span className="hidden sm:inline-block text-2xl opacity-40">✨</span>
+                   
                 </div>
                 <div className="overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 p-4">
                     <RecommendationCarousel userId={user.id} />
