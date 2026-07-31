@@ -4,10 +4,20 @@ interface ConfirmModalProps {
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  confirmLabel?: string;
 }
 
-export default function ConfirmModal({ open, title, message, onConfirm, onCancel }: ConfirmModalProps) {
+export default function ConfirmModal({
+  open,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmLabel = "Delete",
+}: ConfirmModalProps) {
   if (!open) return null;
+
+  const isDestructive = confirmLabel === "Delete";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -23,9 +33,13 @@ export default function ConfirmModal({ open, title, message, onConfirm, onCancel
           </button>
           <button
             onClick={onConfirm}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+            className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${
+              isDestructive
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
           >
-            Delete
+            {confirmLabel}
           </button>
         </div>
       </div>
