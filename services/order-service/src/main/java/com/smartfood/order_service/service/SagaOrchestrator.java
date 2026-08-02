@@ -20,34 +20,40 @@ public class SagaOrchestrator {
     private final RestaurantServiceClient restaurantServiceClient;
     private final KafkaEventPublisher eventPublisher;
     private final NotificationEventPublisher notificationEventPublisher;
-
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final PaymentService paymentService;
 
     @Transactional
     public void executeSaga(Order order) {
         log.info("Starting saga for order {}", order.getId());
 
         try {
-            // ----- Step 1: Reserve inventory -----
+            // Step 1: Reserve inventory
             restaurantServiceClient.reserveInventory(order.getBagId(), order.getQuantity());
             order.setStatus(OrderStatus.RESERVED);
             orderRepository.save(order);
             publishEvent(new InventoryReservedEvent(order.getId(), true));
             log.info("Inventory reserved for order {}", order.getId());
 
-            // ----- Step 2: Process payment (mock) -----
-            mockPayment(order);
+            // Step 2: Process payment via Stripe
+            boolean paymentSuccess = paymentService.charge(
+                    order.getTotalPrice(),
+                    "Order #" + order.getId()
+            );
+            if (!paymentSuccess) {
+                throw new RuntimeException("Stripe payment failed");
+            }
             order.setStatus(OrderStatus.PAID);
             orderRepository.save(order);
             publishEvent(new PaymentProcessedEvent(order.getId(), true));
             log.info("Payment processed for order {}", order.getId());
 
-            // ----- Step 3: Confirm order -----
+            // Step 3: Confirm order
             order.setStatus(OrderStatus.CONFIRMED);
             orderRepository.save(order);
             log.info("Order {} confirmed", order.getId());
 
-            // ----- Record purchase via MCP -----
+            // Record purchase via MCP
             applicationEventPublisher.publishEvent(new OrderConfirmedEvent(
                     order.getId(),
                     order.getUserId(),
@@ -55,7 +61,7 @@ public class SagaOrchestrator {
                     order.getTotalPrice()
             ));
 
-            //  notify user that order is confirmed
+            // Notify user that order is confirmed
             notificationEventPublisher.publishOrderStatusChange(
                     new OrderStatusChangedEvent(
                             order.getId(),
@@ -63,11 +69,9 @@ public class SagaOrchestrator {
                             order.getBagId(),
                             "PENDING",
                             "CONFIRMED",
-                            "🎉 Your order has been confirmed!"
+                            " Your order has been confirmed!"
                     )
             );
-
-
 
         } catch (Exception e) {
             log.error("Saga failed for order {}: {}", order.getId(), e.getMessage());
@@ -94,7 +98,6 @@ public class SagaOrchestrator {
         publishEvent(new OrderFailedEvent(order.getId(), reason));
         log.info("Order {} marked as FAILED", order.getId());
 
-        //  notify user that order failed
         notificationEventPublisher.publishOrderStatusChange(
                 new OrderStatusChangedEvent(
                         order.getId(),
@@ -102,13 +105,9 @@ public class SagaOrchestrator {
                         order.getBagId(),
                         "PENDING",
                         "FAILED",
-                        "❌ Your order failed: " + reason
+                        "Your order failed: " + reason
                 )
         );
-    }
-
-    private void mockPayment(Order order) {
-        log.debug("Mock payment succeeded for order {}", order.getId());
     }
 
     private void publishEvent(Object event) {

@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // --- Helper to build a consistent error JSON 
+    // --- Helper to build a consistent error JSON
     private ResponseEntity<Map<String, Object>> buildError(
             HttpStatus status, String message) {
         Map<String, Object> body = new HashMap<>();
