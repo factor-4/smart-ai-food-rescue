@@ -3,6 +3,7 @@ package com.smartfood.order_service.service;
 import com.stripe.Stripe;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.PaymentIntentConfirmParams;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,27 +23,31 @@ public class PaymentService {
         Stripe.apiKey = secretKey;
     }
 
-    /**
-     * Charge the customer using Stripe.
-     * @param amount  the total amount in EUR
-     * @param description a label for this payment
-     * @return true if the payment succeeded, false otherwise
-     */
     public boolean charge(BigDecimal amount, String description) {
-        // Stripe works in the smallest currency unit (cents)
         long amountInCents = amount.multiply(BigDecimal.valueOf(100)).longValue();
 
-        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
-                .setAmount(amountInCents)
-                .setCurrency("eur")
-                .setDescription(description)
-                // Use the test card 4242 4242 4242 4242 automatically
-                .setPaymentMethod("pm_card_visa")   // pre‑built test payment method
-                .setConfirm(true)
-                .build();
-
         try {
-            PaymentIntent intent = PaymentIntent.create(params);
+            // Step 1: Create a PaymentIntent with automatic payment methods (no redirects)
+            PaymentIntentCreateParams createParams = PaymentIntentCreateParams.builder()
+                    .setAmount(amountInCents)
+                    .setCurrency("eur")
+                    .setDescription(description)
+                    .setAutomaticPaymentMethods(
+                            PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                                    .setEnabled(true)
+                                    .setAllowRedirects(PaymentIntentCreateParams.AutomaticPaymentMethods.AllowRedirects.NEVER)
+                                    .build()
+                    )
+                    .build();
+
+            PaymentIntent intent = PaymentIntent.create(createParams);
+
+            // Step 2: Confirm it using the pre‑built test payment method (no raw card numbers)
+            PaymentIntentConfirmParams confirmParams = PaymentIntentConfirmParams.builder()
+                    .setPaymentMethod("pm_card_visa")   // Stripe’s magic test card
+                    .build();
+
+            intent = intent.confirm(confirmParams);
             log.info("Stripe payment {} for {}: {}", intent.getId(), description, intent.getStatus());
             return "succeeded".equals(intent.getStatus());
         } catch (Exception e) {
