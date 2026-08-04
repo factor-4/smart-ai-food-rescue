@@ -4,7 +4,7 @@ import axios from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { jwtDecode } from 'jwt-decode';
 import { useState } from 'react';
-import ConfirmModal from '../components/ConfirmModal';
+import CardModal from '../components/CardModal';
 import { UtensilsCrossed, Leaf, ChefHat, ImageOff, Search } from 'lucide-react';
 
 interface BagResponse {
@@ -53,8 +53,6 @@ export default function HomePage({ user }: { user: any }) {
         style={{ backgroundImage: "url('/images/hero.png')" }}
       >
         <div className="absolute inset-0 bg-black/40" />
-
-        {/* Decorative icons  */}
         <div className="absolute top-8 right-12 text-white/20">
           <UtensilsCrossed size={48} />
         </div>
@@ -106,7 +104,7 @@ export default function HomePage({ user }: { user: any }) {
             <p className="text-sm text-slate-500">Personalized picks based on your taste</p>
           </div>
           <span className="hidden sm:inline-block text-amber-500 opacity-60">
-            <ChefHat  size={24} />
+            <ChefHat size={24} />
           </span>
         </div>
         <div className="overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 p-4">
@@ -169,19 +167,20 @@ export default function HomePage({ user }: { user: any }) {
 }
 
 function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) {
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showCardModal, setShowCardModal] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
 
   const orderMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: (paymentMethodId: string) =>
       axios.post('/api/orders', {
         idempotencyKey: crypto.randomUUID(),
         userId: customerId,
         bagId: bag.id,
         quantity: 1,
+        paymentMethodId,
       }),
     onSuccess: () => {
-      setShowConfirm(false);
+      setShowCardModal(false);
       setOrderError(null);
     },
     onError: (err: any) => {
@@ -191,7 +190,7 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
 
   const handleOrder = () => {
     if (bag.quantity < 1) return;
-    setShowConfirm(true);
+    setShowCardModal(true);
   };
 
   const price = bag.discountedPrice ?? bag.originalPrice;
@@ -231,14 +230,13 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
         )}
       </div>
 
-      {showConfirm && (
-        <ConfirmModal
-          open={showConfirm}
+      {showCardModal && (
+        <CardModal
+          open={showCardModal}
           title={`Order ${bag.name}`}
-          message={`Reserve 1 bag for €${price.toFixed(2)}?`}
-          onConfirm={() => orderMutation.mutate()}
-          onCancel={() => setShowConfirm(false)}
-          confirmLabel="Order"
+          amount={`€${price.toFixed(2)}`}
+          onClose={() => setShowCardModal(false)}
+          onPay={(paymentMethodId) => orderMutation.mutate(paymentMethodId)}
         />
       )}
     </>

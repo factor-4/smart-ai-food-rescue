@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { useAuthStore } from './stores/authStore';
-import Navbar from './components/Navbar';   // normal import – used on every page
+import Navbar from './components/Navbar';
+import { Elements } from '@stripe/react-stripe-js';   
+import { stripePromise } from './lib/stripe';          
 
-// Lazy‑loaded pages – each one becomes a separate JavaScript file
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Checkout = lazy(() => import('./pages/Checkout'));
@@ -36,32 +37,34 @@ function AppContent() {
       <Navbar />
 
       <main className="mx-auto px-6 py-8">
-        {/* Suspense shows a fallback while a lazy component loads */}
         <Suspense
           fallback={
             <div className="p-8 text-center text-gray-500">Loading page…</div>
           }
         >
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/orders" element={<OrderHistory />} />
-            <Route path="/map" element={<MapPage />} />
-            <Route path="/dashboard" element={<DashboardSelectorGuard />} />
-            <Route path="/dashboard/:restaurantId" element={<DashboardWrapper />} />
-            <Route path="/owner/bags" element={<OwnerGuard />} />
-            <Route
-              path="/"
-              element={
-                user ? (
-                  <HomePage user={user} />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-          </Routes>
+          
+          <Elements stripe={stripePromise}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/orders" element={<OrderHistory />} />
+              <Route path="/map" element={<MapPage />} />
+              <Route path="/dashboard" element={<DashboardSelectorGuard />} />
+              <Route path="/dashboard/:restaurantId" element={<DashboardWrapper />} />
+              <Route path="/owner/bags" element={<OwnerGuard />} />
+              <Route
+                path="/"
+                element={
+                  user ? (
+                    <HomePage user={user} />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+            </Routes>
+          </Elements>
         </Suspense>
       </main>
     </div>
