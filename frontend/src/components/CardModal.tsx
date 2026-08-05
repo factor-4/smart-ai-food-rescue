@@ -5,11 +5,23 @@ interface CardModalProps {
     open: boolean;
     title: string;
     amount: string;
+    bagName: string;
+    restaurantName?: string;
+    imageUrl?: string | null;
     onClose: () => void;
     onPay: (paymentMethodId: string) => void;
 }
 
-export default function CardModal({ open, title, amount, onClose, onPay }: CardModalProps) {
+export default function CardModal({
+    open,
+    title,
+    amount,
+    bagName,
+    restaurantName,
+    imageUrl,
+    onClose,
+    onPay,
+}: CardModalProps) {
     const stripe = useStripe();
     const elements = useElements();
     const [error, setError] = useState<string | null>(null);
@@ -22,7 +34,6 @@ export default function CardModal({ open, title, amount, onClose, onPay }: CardM
         setProcessing(true);
         setError(null);
 
-        // Create a PaymentMethod from the card details
         const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
             type: 'card',
             card: elements.getElement(CardElement)!,
@@ -34,7 +45,6 @@ export default function CardModal({ open, title, amount, onClose, onPay }: CardM
             return;
         }
 
-        // Give the PaymentMethod ID back to the parent
         onPay(paymentMethod!.id);
         setProcessing(false);
     };
@@ -44,11 +54,25 @@ export default function CardModal({ open, title, amount, onClose, onPay }: CardM
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
-                <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
-                <p className="mt-1 text-sm text-slate-600">{amount}</p>
+                {/* Bag summary */}
+                <div className="flex items-center gap-4 mb-5">
+                    <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden shrink-0">
+                        {imageUrl ? (
+                            <img src={imageUrl} alt={bagName} className="h-full w-full object-cover" />
+                        ) : (
+                            <div className="flex h-full items-center justify-center text-slate-300 text-2xl">No Image</div>
+                        )}
+                    </div>
+                    <div>
+                        <p className="font-semibold text-slate-800">{bagName}</p>
+                        {restaurantName && (
+                            <p className="text-xs text-slate-500">{restaurantName}</p>
+                        )}
+                        <p className="text-sm font-bold text-green-700 mt-0.5">{amount}</p>
+                    </div>
+                </div>
 
-                <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-                    {/* Stripe card input */}
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="rounded-lg border border-slate-300 p-3">
                         <CardElement options={{ style: { base: { fontSize: '14px' } } }} />
                     </div>
