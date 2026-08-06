@@ -43,8 +43,9 @@ public class PaymentService {
             PaymentIntent intent = PaymentIntent.create(createParams);
 
             // Step 2: Confirm it using the pre‑built test payment method (no raw card numbers)
+            // Stripe’s  test card
             PaymentIntentConfirmParams confirmParams = PaymentIntentConfirmParams.builder()
-                    .setPaymentMethod("pm_card_visa")   // Stripe’s magic test card
+                    .setPaymentMethod("pm_card_visa")
                     .build();
 
             intent = intent.confirm(confirmParams);

@@ -1,6 +1,7 @@
 package com.smartfood.order_service.repository;
 
 import com.smartfood.order_service.domain.Order;
+import com.smartfood.order_service.domain.OrderStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -49,4 +50,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o), COALESCE(SUM(o.totalPrice), 0) " +
             "FROM Order o WHERE o.userId = :userId")
     List<Object[]> getUserImpact(@Param("userId") Long userId);
+
+
+    List<Order> findByRestaurantIdAndStatusOrderByCreatedAtDesc(Long restaurantId, OrderStatus status);
 }

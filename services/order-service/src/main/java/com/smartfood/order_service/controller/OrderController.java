@@ -2,6 +2,7 @@ package com.smartfood.order_service.controller;
 
 import com.smartfood.order_service.dto.impact.ImpactResponse;
 import com.smartfood.order_service.dto.request.CreateOrderRequest;
+import com.smartfood.order_service.dto.request.UpdateOrderStatusRequest;
 import com.smartfood.order_service.dto.response.OrderResponse;
 import com.smartfood.order_service.service.OrderService;
 import jakarta.validation.Valid;
@@ -38,5 +39,13 @@ public class OrderController {
     @GetMapping("/impact/{userId}")
     public ResponseEntity<ImpactResponse> getUserImpact(@PathVariable Long userId) {
         return ResponseEntity.ok(orderService.getUserImpact(userId));
+    }
+
+
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestBody UpdateOrderStatusRequest request) {
+        return ResponseEntity.ok(orderService.updateOrderStatus(orderId, request.getStatus()));
     }
 }

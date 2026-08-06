@@ -177,4 +177,50 @@ public class OrderService {
                 .co2PreventedKg(co2)
                 .build();
     }
+
+
+
+    public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        // Only allow transitions from PAID
+        if (order.getStatus() != OrderStatus.PAID) {
+            throw new IllegalStateException("Only PAID orders can be accepted or rejected");
+        }
+
+        if (newStatus == OrderStatus.CONFIRMED) {
+            order.setStatus(OrderStatus.CONFIRMED);
+            orderRepository.save(order);
+            log.info("Order {} confirmed by restaurant", orderId);
+        } else if (newStatus == OrderStatus.REJECTED) {
+            // Release inventory before rejecting
+            try {
+                restaurantServiceClient.releaseInventory(order.getBagId(), order.getQuantity());
+            } catch (Exception e) {
+                log.error("Failed to release inventory for rejected order {}", orderId, e);
+            }
+            order.setStatus(OrderStatus.REJECTED);
+            orderRepository.save(order);
+            log.info("Order {} rejected by restaurant", orderId);
+        } else {
+            throw new IllegalArgumentException("Invalid status for this operation: " + newStatus);
+        }
+
+        // Notify the customer about the status change
+        notificationEventPublisher.publishOrderStatusChange(
+                new OrderStatusChangedEvent(
+                        order.getId(),
+                        order.getUserId(),
+                        order.getBagId(),
+                        "PAID",
+                        newStatus.name(),
+                        newStatus == OrderStatus.CONFIRMED
+                                ? " Your order has been confirmed!"
+                                : " Your order was rejected by the restaurant."
+                )
+        );
+
+        return OrderResponse.fromEntity(order);
+    }
 }
