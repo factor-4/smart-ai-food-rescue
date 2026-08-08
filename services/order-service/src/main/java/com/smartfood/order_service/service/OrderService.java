@@ -223,4 +223,12 @@ public class OrderService {
 
         return OrderResponse.fromEntity(order);
     }
+
+    public List<OrderResponse> getPaidOrdersForRestaurant(Long restaurantId) {
+        List<Order> orders = orderRepository.findByRestaurantIdAndStatusOrderByCreatedAtDesc(
+                restaurantId, OrderStatus.PAID);
+        return orders.stream()
+                .map(OrderResponse::fromEntity)
+                .toList();
+    }
 }

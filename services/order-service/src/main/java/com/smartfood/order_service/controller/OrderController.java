@@ -48,4 +48,10 @@ public class OrderController {
             @RequestBody UpdateOrderStatusRequest request) {
         return ResponseEntity.ok(orderService.updateOrderStatus(orderId, request.getStatus()));
     }
+
+    @GetMapping("/restaurant/{restaurantId}/paid")
+    public ResponseEntity<List<OrderResponse>> getPaidOrdersForRestaurant(
+            @PathVariable Long restaurantId) {
+        return ResponseEntity.ok(orderService.getPaidOrdersForRestaurant(restaurantId));
+    }
 }
