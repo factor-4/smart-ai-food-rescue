@@ -11,11 +11,13 @@ export default function Navbar() {
 
     const links: { to: string; label: string }[] = [];
     links.push({ to: '/', label: 'Home' });
-    links.push({ to: '/checkout', label: 'Checkout' });
     links.push({ to: '/orders', label: 'Orders' });
     links.push({ to: '/map', label: 'Map' });
 
+
+
     if (user?.role === 'ROLE_OWNER') {
+        links.push({ to: '/owner/orders', label: 'Manage Orders' });
         links.push({ to: '/owner/bags', label: 'My Bags' });
         links.push({ to: '/dashboard', label: 'Dashboard' });
     }

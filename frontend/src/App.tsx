@@ -14,6 +14,7 @@ const DashboardWrapper = lazy(() => import('./components/DashboardWrapper'));
 const HomePage = lazy(() => import('./pages/HomePage'));
 const OwnerBagsPage = lazy(() => import('./pages/OwnerBagsPage'));
 const DashboardSelector = lazy(() => import('./pages/DashboardSelector'));
+const OwnerOrdersPage = lazy(() => import('./pages/OwnerOrdersPage'));
 
 function OwnerGuard() {
   const user = useAuthStore((state) => state.user);
@@ -27,6 +28,12 @@ function DashboardSelectorGuard() {
   const user = useAuthStore((s) => s.user);
   if (!user || user.role !== 'ROLE_OWNER') return <Navigate to="/login" replace />;
   return <DashboardSelector />;
+}
+
+function OwnerGuardOrders() {
+  const user = useAuthStore((s) => s.user);
+  if (!user || user.role !== 'ROLE_OWNER') return <Navigate to="/login" replace />;
+  return <OwnerOrdersPage />;
 }
 
 function AppContent() {
@@ -53,6 +60,7 @@ function AppContent() {
               <Route path="/dashboard" element={<DashboardSelectorGuard />} />
               <Route path="/dashboard/:restaurantId" element={<DashboardWrapper />} />
               <Route path="/owner/bags" element={<OwnerGuard />} />
+              <Route path="/owner/orders" element={<OwnerGuardOrders />} />
               <Route
                 path="/"
                 element={

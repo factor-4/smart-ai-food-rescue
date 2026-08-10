@@ -22,20 +22,20 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // --- Not found (bag, order, etc.)
+    //  Not found (bag, order, etc.)
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    // --- Not enough inventory ---
+    //  Not enough inventory ---
     @ExceptionHandler(InsufficientInventoryException.class)
     public ResponseEntity<Map<String, Object>> handleInsufficientInventory(
             InsufficientInventoryException ex) {
         return buildError(HttpStatus.CONFLICT, ex.getMessage());
     }
 
-    // --- Validation errors
+    //  Validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(
             MethodArgumentNotValidException ex) {
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
-    // --- Any other unhandled exception
+    //  Any other unhandled exception
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
         log.error("Unhandled exception: ", ex);   // prints stack trace to console
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // --- Helper to build a consistent error JSON
+    //  Helper to build a consistent error JSON
     private ResponseEntity<Map<String, Object>> buildError(
             HttpStatus status, String message) {
         Map<String, Object> body = new HashMap<>();
