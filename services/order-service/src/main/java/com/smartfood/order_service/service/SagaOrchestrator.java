@@ -48,11 +48,6 @@ public class SagaOrchestrator {
             publishEvent(new PaymentProcessedEvent(order.getId(), true));
             log.info("Payment processed for order {}", order.getId());
 
-            // Step 3: Confirm order
-            order.setStatus(OrderStatus.CONFIRMED);
-            orderRepository.save(order);
-            log.info("Order {} confirmed", order.getId());
-
             // Record purchase via MCP
             applicationEventPublisher.publishEvent(new OrderConfirmedEvent(
                     order.getId(),
@@ -61,15 +56,15 @@ public class SagaOrchestrator {
                     order.getTotalPrice()
             ));
 
-            // Notify user that order is confirmed
+            // Notify user that payment succeeded
             notificationEventPublisher.publishOrderStatusChange(
                     new OrderStatusChangedEvent(
                             order.getId(),
                             order.getUserId(),
                             order.getBagId(),
                             "PENDING",
-                            "CONFIRMED",
-                            " Your order has been confirmed!"
+                            "PAID",
+                            "Payment successful! Waiting for restaurant confirmation."
                     )
             );
 
