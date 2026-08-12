@@ -1,5 +1,5 @@
 import { RecommendationCarousel } from '../components/RecommendationCarousel';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { jwtDecode } from 'jwt-decode';
@@ -170,6 +170,8 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
     const [showCardModal, setShowCardModal] = useState(false);
     const [orderError, setOrderError] = useState<string | null>(null);
 
+    const queryClient = useQueryClient();
+
     const orderMutation = useMutation({
         mutationFn: (paymentMethodId: string) =>
             axios.post('/api/orders', {
@@ -182,6 +184,7 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
         onSuccess: () => {
             setShowCardModal(false);
             setOrderError(null);
+            queryClient.invalidateQueries({ queryKey: ['orders', customerId] });
         },
         onError: (err: any) => {
             setOrderError(err?.response?.data?.message || 'Order failed');
