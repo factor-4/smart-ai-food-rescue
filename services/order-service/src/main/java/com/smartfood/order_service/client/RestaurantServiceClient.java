@@ -1,6 +1,7 @@
 package com.smartfood.order_service.client;
 
 import com.smartfood.order_service.dto.BagInfo;
+import com.smartfood.order_service.dto.response.RestaurantResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 public class RestaurantServiceClient {
 
     private final RestaurantClient restaurantClient;
+    private final RestaurantFeignClient restaurantFeignClient;
 
     @CircuitBreaker(name = "restaurantService", fallbackMethod = "getBagFallback")
     public BagInfo getBag(Long bagId) {
@@ -37,5 +39,15 @@ public class RestaurantServiceClient {
 
     private void releaseInventoryFallback(Long bagId, Integer quantity, Throwable t) {
         throw new RuntimeException("Circuit open or call failed for releaseInventory", t);
+    }
+
+
+    @CircuitBreaker(name = "restaurantService", fallbackMethod = "getRestaurantFallback")
+    public RestaurantResponse getRestaurantById(Long restaurantId) {
+        return restaurantFeignClient.getRestaurantById(restaurantId);
+    }
+
+    private RestaurantResponse getRestaurantFallback(Long restaurantId, Throwable t) {
+        throw new RuntimeException("Circuit open or call failed for getRestaurantById", t);
     }
 }

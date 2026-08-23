@@ -4,20 +4,24 @@ import com.smartfood.order_service.client.RestaurantServiceClient;
 import com.smartfood.order_service.domain.Order;
 import com.smartfood.order_service.domain.OrderStatus;
 import com.smartfood.order_service.dto.BagInfo;
+import com.smartfood.order_service.dto.response.RestaurantResponse;
 import com.smartfood.order_service.dto.impact.ImpactResponse;
-import com.smartfood.order_service.dto.response.DashboardResponse;
 import com.smartfood.order_service.dto.request.CreateOrderRequest;
+import com.smartfood.order_service.dto.response.DashboardResponse;
 import com.smartfood.order_service.dto.response.OrderResponse;
 import com.smartfood.order_service.event.InventoryUpdatedEvent;
 import com.smartfood.order_service.event.OrderCreatedEvent;
 import com.smartfood.order_service.event.OrderStatusChangedEvent;
 import com.smartfood.order_service.exception.InsufficientInventoryException;
 import com.smartfood.order_service.exception.ResourceNotFoundException;
+import com.smartfood.order_service.exception.UnauthorizedException;
 import com.smartfood.order_service.repository.OrderRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,14 +46,12 @@ public class OrderService {
         meterRegistry.counter("orders.attempts").increment();
 
         try {
-            // 1. Idempotency check
             Optional<Order> existing = orderRepository.findByIdempotencyKey(request.getIdempotencyKey());
             if (existing.isPresent()) {
                 log.info("Returning existing order for idempotencyKey: {}", request.getIdempotencyKey());
                 return OrderResponse.fromEntity(existing.get());
             }
 
-            // 2. Get bag details (price and availability)
             BagInfo bagInfo = restaurantServiceClient.getBag(request.getBagId());
             if (bagInfo == null || !"AVAILABLE".equals(bagInfo.getStatus())) {
                 throw new ResourceNotFoundException("Bag not available");
@@ -62,7 +64,6 @@ public class OrderService {
                     : bagInfo.getOriginalPrice();
             BigDecimal total = price.multiply(BigDecimal.valueOf(request.getQuantity()));
 
-            // 3. Create order
             Order order = Order.builder()
                     .idempotencyKey(request.getIdempotencyKey())
                     .userId(request.getUserId())
@@ -77,7 +78,6 @@ public class OrderService {
 
             meterRegistry.counter("orders.created").increment();
 
-            // 4. Publish saga event to Kafka
             OrderCreatedEvent event = new OrderCreatedEvent(
                     order.getId(),
                     order.getUserId(),
@@ -88,7 +88,6 @@ public class OrderService {
             );
             eventPublisher.publishOrderCreated(event);
 
-            // 5. Publish order status notification
             OrderStatusChangedEvent statusEvent = new OrderStatusChangedEvent(
                     order.getId(),
                     order.getUserId(),
@@ -99,7 +98,6 @@ public class OrderService {
             );
             notificationEventPublisher.publishOrderStatusChange(statusEvent);
 
-            // 6. Publish inventory update notification
             int remainingQuantity = bagInfo.getQuantity() - request.getQuantity();
             InventoryUpdatedEvent inventoryEvent = new InventoryUpdatedEvent(
                     bagInfo.getId(),
@@ -132,11 +130,9 @@ public class OrderService {
                 .toList();
     }
 
-    // ===================== DASHBOARD =====================
     public DashboardResponse getDashboard(Long restaurantId) {
         LocalDateTime since = LocalDateTime.now().minusDays(7).toLocalDate().atStartOfDay();
 
-        // Daily sales
         List<Object[]> dailyRows = orderRepository.findDailySales(restaurantId, since);
         List<DashboardResponse.DailySale> sales = dailyRows.stream()
                 .map(row -> DashboardResponse.DailySale.builder()
@@ -145,10 +141,8 @@ public class OrderService {
                         .build())
                 .toList();
 
-        // Total revenue
         BigDecimal totalRevenue = orderRepository.totalRevenueLast7Days(restaurantId, since);
 
-        // Popular bags (top 5)
         List<Object[]> bagRows = orderRepository.findTopBags(restaurantId, PageRequest.of(0, 5));
         List<DashboardResponse.PopularBag> popularBags = bagRows.stream()
                 .map(row -> DashboardResponse.PopularBag.builder()
@@ -164,12 +158,10 @@ public class OrderService {
                 .build();
     }
 
-
     public ImpactResponse getUserImpact(Long userId) {
         Object[] row = orderRepository.getUserImpact(userId).get(0);
         long count = ((Number) row[0]).longValue();
         BigDecimal total = (BigDecimal) row[1];
-        // 2.5 kg CO₂ saved per bag (standard average)
         double co2 = count * 2.5;
         return ImpactResponse.builder()
                 .mealsSaved(count)
@@ -178,13 +170,19 @@ public class OrderService {
                 .build();
     }
 
-
-
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Only allow transitions from PAID
+        // Ownership check: only the restaurant owner can accept/reject
+        RestaurantResponse restaurant = restaurantServiceClient.getRestaurantById(order.getRestaurantId());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long currentUserId = (Long) auth.getPrincipal();
+
+        if (!restaurant.getOwnerId().equals(currentUserId)) {
+            throw new UnauthorizedException("You are not the owner of this restaurant");
+        }
+
         if (order.getStatus() != OrderStatus.PAID) {
             throw new IllegalStateException("Only PAID orders can be accepted or rejected");
         }
@@ -194,7 +192,6 @@ public class OrderService {
             orderRepository.save(order);
             log.info("Order {} confirmed by restaurant", orderId);
         } else if (newStatus == OrderStatus.REJECTED) {
-            // Release inventory before rejecting
             try {
                 restaurantServiceClient.releaseInventory(order.getBagId(), order.getQuantity());
             } catch (Exception e) {
@@ -207,7 +204,6 @@ public class OrderService {
             throw new IllegalArgumentException("Invalid status for this operation: " + newStatus);
         }
 
-        // Notify the customer about the status change
         notificationEventPublisher.publishOrderStatusChange(
                 new OrderStatusChangedEvent(
                         order.getId(),
@@ -216,8 +212,8 @@ public class OrderService {
                         "PAID",
                         newStatus.name(),
                         newStatus == OrderStatus.CONFIRMED
-                                ? " Your order has been confirmed!"
-                                : " Your order was rejected by the restaurant."
+                                ? "Your order has been confirmed!"
+                                : "Your order was rejected by the restaurant."
                 )
         );
 
