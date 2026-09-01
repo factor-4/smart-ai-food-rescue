@@ -13,12 +13,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
+import org.springframework.core.io.ClassPathResource;
+import java.io.InputStream;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -26,15 +27,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final PublicKey publicKey;
 
     public JwtAuthenticationFilter() throws Exception {
-        byte[] keyBytes = Files.readAllBytes(Path.of("classpath:keys/public.pem"));
-        String publicKeyPEM = new String(keyBytes)
-                .replace("-----BEGIN PUBLIC KEY-----", "")
-                .replace("-----END PUBLIC KEY-----", "")
-                .replaceAll("\\s", "");
-        byte[] decoded = java.util.Base64.getDecoder().decode(publicKeyPEM);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        this.publicKey = kf.generatePublic(spec);
+        ClassPathResource resource = new ClassPathResource("keys/public.pem");
+        try (InputStream inputStream = resource.getInputStream()) {
+            String publicKeyPEM = new String(inputStream.readAllBytes())
+                    .replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----", "")
+                    .replaceAll("\\s", "");
+            byte[] decoded = java.util.Base64.getDecoder().decode(publicKeyPEM);
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            this.publicKey = kf.generatePublic(spec);
+        }
     }
 
     @Override
