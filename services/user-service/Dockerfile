@@ -18,7 +18,7 @@ WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 
 # The port  service listens on
-EXPOSE 8082
+EXPOSE 8081
 
 # Command to start the service
 ENTRYPOINT ["java", "-jar", "app.jar"]

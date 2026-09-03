@@ -7,7 +7,7 @@ import { stripePromise } from './lib/stripe';
 
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
-const Checkout = lazy(() => import('./pages/Checkout'));
+
 const OrderHistory = lazy(() => import('./pages/OrderHistory'));
 const MapPage = lazy(() => import('./pages/MapPage'));
 const DashboardWrapper = lazy(() => import('./components/DashboardWrapper'));
@@ -54,7 +54,7 @@ function AppContent() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/checkout" element={<Checkout />} />
+              
               <Route path="/orders" element={<OrderHistory />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/dashboard" element={<DashboardSelectorGuard />} />
