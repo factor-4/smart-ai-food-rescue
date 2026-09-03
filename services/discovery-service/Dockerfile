@@ -2,6 +2,9 @@
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 
+# Install Maven (because the JDK image doesn't have it)
+RUN apk add --no-cache maven
+
 # Copy only the pom.xml first to cache dependencies
 COPY pom.xml .
 RUN mvn dependency:go-offline
