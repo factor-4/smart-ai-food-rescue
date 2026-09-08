@@ -1,5 +1,7 @@
 # Environment variables with secrets
 .env
+.env.production
+k8s/secrets.yaml
 
 # Node modules
 node_modules/
