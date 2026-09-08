@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/smartfood}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false   # turn off SQL logging in production
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://discovery-service:8761/eureka}
+
+app:
+  jwt:
+    # In production, the private key will be mounted from a Kubernetes secret
+    private-key-path: ${JWT_PRIVATE_KEY_PATH:/app/keys/private-pkcs8.pem}
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:/app/keys/public.pem}
+    expiration-ms: 86400000
+
+logging:
+  level:
+    org.springframework.security: INFO

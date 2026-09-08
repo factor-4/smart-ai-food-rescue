@@ -1,0 +1,14 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://discovery-service:8761/eureka}
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: ai-agent-service
+          uri: http://ai-agent:8000
+          predicates:
+            - Path=/api/recommendations/**, /api/pricing/**, /mcp/**
+

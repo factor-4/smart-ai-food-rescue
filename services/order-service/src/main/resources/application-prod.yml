@@ -1,0 +1,70 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/smartfood}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # keep for now, will use Flyway later
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: order-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.smartfood.*"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://discovery-service:8761/eureka}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      restaurantService:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+
+app:
+  kafka:
+    topics:
+      order-created: order-created
+      inventory-reserved: inventory-reserved
+      payment-processed: payment-processed
+      order-failed: order-failed
+      inventory-released: inventory-released
+      order-failed-dlq: order-failed-dlq
+  jwt:
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:/app/keys/public.pem}
+
+mcp:
+  ai-agent:
+    base-url: ${MCP_AI_AGENT_BASE_URL:http://ai-agent:8000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+
+logging:
+  level:
+    org.springframework.security: INFO
