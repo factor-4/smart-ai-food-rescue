@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent
+  namespace: smartfood
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-agent
+  template:
+    metadata:
+      labels:
+        app: ai-agent
+    spec:
+      containers:
+        - name: ai-agent
+          image: smartfood-ai:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: smartfood
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: smartfood-config
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smartfood-secrets
+                  key: DB_PASSWORD
+            - name: OLLAMA_BASE_URL
+              value: "http://host.docker.internal:11434"
+            - name: LANGCHAIN_TRACING_V2
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-agent
+  namespace: smartfood
+spec:
+  selector:
+    app: ai-agent
+  ports:
+    - port: 8000
+      targetPort: 8000

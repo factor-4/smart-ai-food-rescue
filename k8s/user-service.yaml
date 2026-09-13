@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: smartfood
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: smartfood-user:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smartfood-config
+                  key: DB_URL
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: smartfood-config
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smartfood-secrets
+                  key: DB_PASSWORD
+            - name: EUREKA_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: smartfood-config
+                  key: EUREKA_URL
+            - name: JWT_PRIVATE_KEY_PATH
+              value: /app/keys/private-pkcs8.pem
+            - name: JWT_PUBLIC_KEY_PATH
+              value: /app/keys/public.pem
+          volumeMounts:
+            - name: jwt-keys
+              mountPath: /app/keys
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 40
+            periodSeconds: 10
+      volumes:
+        - name: jwt-keys
+          secret:
+            secretName: smartfood-secrets
+            items:
+              - key: JWT_PRIVATE_KEY
+                path: private-pkcs8.pem
+              - key: JWT_PUBLIC_KEY
+                path: public.pem
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: smartfood
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 8081
+      targetPort: 8081
