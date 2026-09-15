@@ -43,7 +43,7 @@ spec:
                   name: smartfood-config
                   key: EUREKA_URL
             - name: JWT_PUBLIC_KEY_PATH
-              value: /app/keys/public.pem
+              value: file:/app/keys/public.pem
             - name: CLOUDINARY_CLOUD_NAME
               valueFrom:
                 secretKeyRef:

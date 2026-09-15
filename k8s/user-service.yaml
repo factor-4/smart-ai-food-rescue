@@ -43,9 +43,9 @@ spec:
                   name: smartfood-config
                   key: EUREKA_URL
             - name: JWT_PRIVATE_KEY_PATH
-              value: /app/keys/private-pkcs8.pem
+              value: file:/app/keys/private-pkcs8.pem
             - name: JWT_PUBLIC_KEY_PATH
-              value: /app/keys/public.pem
+              value: file:/app/keys/public.pem
           volumeMounts:
             - name: jwt-keys
               mountPath: /app/keys

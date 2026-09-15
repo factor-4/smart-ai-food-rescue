@@ -19,7 +19,10 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
+            - containerPort: 9093
           env:
+            - name: CLUSTER_ID
+              value: "MkU3OEVBNTcwNTJENDM2Qk"
             - name: KAFKA_NODE_ID
               value: "1"
             - name: KAFKA_PROCESS_ROLES
@@ -33,7 +36,7 @@ spec:
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
               value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-              value: "1@kafka:9093"
+              value: "1@localhost:9093"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
             - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
@@ -42,11 +45,14 @@ spec:
               value: "1"
             - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
               value: "0"
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
           readinessProbe:
             tcpSocket:
               port: 9092
-            initialDelaySeconds: 20
+            initialDelaySeconds: 40
             periodSeconds: 10
+            failureThreshold: 6
 ---
 apiVersion: v1
 kind: Service
@@ -60,3 +66,6 @@ spec:
     - name: broker
       port: 9092
       targetPort: 9092
+    - name: controller
+      port: 9093
+      targetPort: 9093

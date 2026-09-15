@@ -53,7 +53,7 @@ spec:
                   name: smartfood-config
                   key: MCP_AI_AGENT_BASE_URL
             - name: JWT_PUBLIC_KEY_PATH
-              value: /app/keys/public.pem
+              value: file:/app/keys/public.pem
             - name: STRIPE_SECRET_KEY
               valueFrom:
                 secretKeyRef:
