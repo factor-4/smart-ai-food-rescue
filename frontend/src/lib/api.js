@@ -2,7 +2,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useAuthStore } from '../stores/authStore';
 const api = axios.create({
-    baseURL: 'http://localhost:8080', // API Gateway
+    baseURL: import.meta.env.VITE_API_BASE_URL || '', // API Gateway
     headers: { 'Content-Type': 'application/json' },
 });
 api.interceptors.request.use((config) => {

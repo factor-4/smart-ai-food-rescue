@@ -6,9 +6,48 @@ eureka:
 spring:
   cloud:
     gateway:
-      routes:
-        - id: ai-agent-service
-          uri: http://ai-agent:8000
-          predicates:
-            - Path=/api/recommendations/**, /api/pricing/**, /mcp/**
-
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins:
+                  - "http://smartfood.local"
+                  - "http://localhost:5173"
+                  - "http://localhost:3000"
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowed-headers:
+                  - "*"
+                allow-credentials: true
+          routes:
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/auth/**, /api/users/**
+            - id: order-service
+              uri: lb://order-service
+              predicates:
+                - Path=/api/orders/**
+            - id: restaurant-service
+              uri: lb://restaurant-service
+              predicates:
+                - Path=/api/bags/**, /api/restaurants/**
+            - id: order-service-dashboard
+              uri: lb://order-service
+              predicates:
+                - Path=/api/dashboard/**
+            - id: notification-service-ws
+              uri: lb://notification-service
+              predicates:
+                - Path=/ws/**
+              filters:
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+            - id: ai-agent-service
+              uri: http://ai-agent:8000
+              predicates:
+                - Path=/api/recommendations/**, /api/pricing/**, /mcp/**

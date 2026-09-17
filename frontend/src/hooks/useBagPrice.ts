@@ -16,7 +16,7 @@ export function useBagPrice(bagId: number | null | undefined) {
         if (!bagId) return;
 
         const client = new Client({
-            webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+            webSocketFactory: () => new SockJS('/ws'),
 
             onConnect: () => {
                 console.log('WebSocket connected for bag price, bagId:', bagId);

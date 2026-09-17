@@ -3,8 +3,8 @@ Pricing Agent – calculates a dynamic discount for surplus bags.
 Uses rule‑based logic (time urgency + supply + price tier) as default,
 with an optional LLM fallback for complex/urgent scenarios.
 """
+import os
 import re
-import asyncio
 from datetime import datetime, timezone
 from app.core.db import get_bag_by_id
 from langsmith import traceable
@@ -12,28 +12,25 @@ from langchain_ollama import ChatOllama
 
 class PricingAgent:
     def __init__(self):
-        # Thresholds
-        self.urgent_hours = 2        # if pickup < 2h away → urgent
-        self.high_stock = 5          # more than this → overstocked
-        self.base_discount = 0.10    # 10% minimum
-        self.max_discount = 0.70     # never discount more than 70%
+        self.urgent_hours = 2
+        self.high_stock = 5
+        self.base_discount = 0.10
+        self.max_discount = 0.70
 
-        # LLM for fallback (same local model as Planner)
-        self.llm = ChatOllama(model="phi3:mini", temperature=0)
+        self.llm = ChatOllama(
+            model="phi3:mini",
+            temperature=0,
+            base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+        )
 
     @traceable(name="PricingAgent.suggest", project_name="smart-food-rescue")
     async def suggest(self, bag_id: int) -> float:
-        """
-        Return a discount as a decimal (0.0 = 0%, 1.0 = 100%).
-        """
         bag = get_bag_by_id(bag_id)
         if bag is None:
             return 0.0
 
-        # 1. Rule‑based discount (existing logic)
         rule_discount = self._calculate_rule_discount(bag)
 
-        # 2. Conditionally invoke LLM for complex cases
         now = datetime.now(timezone.utc)
         pickup = bag["pickup_time"]
         if pickup.tzinfo is None:
@@ -44,7 +41,6 @@ class PricingAgent:
         if hours_left <= self.urgent_hours and quantity >= self.high_stock:
             try:
                 llm_discount = await self._llm_suggest(bag)
-                # Always choose the higher discount to maximise food rescue
                 discount = max(rule_discount, llm_discount)
             except Exception as e:
                 print(f"LLM fallback failed, using rule discount: {e}")
@@ -52,13 +48,11 @@ class PricingAgent:
         else:
             discount = rule_discount
 
-        # Final cap (rule already capped, but LLM might exceed)
         discount = min(discount, self.max_discount)
         discount = round(discount, 2)
         return discount
 
     def _calculate_rule_discount(self, bag: dict) -> float:
-        """Original rule‑based logic, extracted for cleanliness."""
         discount = self.base_discount
 
         now = datetime.now(timezone.utc)
@@ -84,7 +78,6 @@ class PricingAgent:
         return discount
 
     async def _llm_suggest(self, bag: dict) -> float:
-        """Ask the local LLM for a creative discount in urgent/high‑stock cases."""
         prompt = f"""
 You are a dynamic pricing agent for a food rescue platform.
 A surplus bag has these details:
@@ -97,7 +90,6 @@ The goal is to prevent food waste. Recommend a discount percentage (as a decimal
 Return only the number (e.g., 0.85).
 """
         response = await self.llm.ainvoke(prompt)
-        # Extract the first float from the response
         match = re.search(r"(\d+\.?\d*)", response.content)
         if match:
             return float(match.group(1))

@@ -2,21 +2,24 @@
 Planner Agent – powered by a  LLM (Ollama ).
 Analyzes the user query and outputs a structured plan (JSON).
 """
+import os
 from langchain_ollama import ChatOllama
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langsmith import traceable
 
-# Define the expected output schema for the plan
 class PlanOutput(BaseModel):
     query: str = Field(description="The original user query (for downstream retrieval)")
     steps: list[str] = Field(description="Ordered list of steps/tools to call")
 
 class PlannerAgent:
     def __init__(self):
-        # Use Ollama with Phi-3-mini; temperature=0 for deterministic, reliable plans
-        self.llm = ChatOllama(model="phi3:mini", temperature=0)
+        self.llm = ChatOllama(
+            model="phi3:mini",
+            temperature=0,
+            base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+        )
         self.parser = PydanticOutputParser(pydantic_object=PlanOutput)
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", """
@@ -40,12 +43,9 @@ Output a JSON plan with exactly two keys:
 
     @traceable(name="PlannerAgent.plan", project_name="smart-food-rescue")
     async def plan(self, user_query: str) -> dict:
-        # Build the chain: prompt -> LLM -> parser
         chain = self.prompt | self.llm | self.parser
-        # Invoke and get a PlanOutput object
         plan_output = await chain.ainvoke({
             "user_query": user_query,
             "format_instructions": self.parser.get_format_instructions()
         })
-        # Convert to dict for downstream (RAG agent expects dict)
         return plan_output.model_dump()
