@@ -9,7 +9,7 @@ interface CardModalProps {
     restaurantName?: string;
     imageUrl?: string | null;
     onClose: () => void;
-    onPay: (paymentMethodId: string) => void;
+    onPay: (paymentMethodId: string) => Promise<void>;
 }
 
 export default function CardModal({
@@ -45,8 +45,14 @@ export default function CardModal({
             return;
         }
 
-        onPay(paymentMethod!.id);
-        setProcessing(false);
+        try {
+            await onPay(paymentMethod!.id);
+            onClose();
+        } catch (err: any) {
+            setError(err?.response?.data?.message ?? 'Payment failed');
+        } finally {
+            setProcessing(false);
+        }
     };
 
     if (!open) return null;

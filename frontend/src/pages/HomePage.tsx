@@ -182,7 +182,6 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
                 paymentMethodId,
             }),
         onSuccess: () => {
-            setShowCardModal(false);
             setOrderError(null);
             queryClient.invalidateQueries({ queryKey: ['orders', customerId] });
         },
@@ -242,7 +241,7 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
                     restaurantName={bag.restaurantName}
                     imageUrl={bag.imageUrl}
                     onClose={() => setShowCardModal(false)}
-                    onPay={(paymentMethodId) => orderMutation.mutate(paymentMethodId)}
+                    onPay={(paymentMethodId) => orderMutation.mutateAsync(paymentMethodId).then(() => { })}
                 />
             )}
         </>
