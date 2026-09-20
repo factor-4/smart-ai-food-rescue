@@ -49,13 +49,13 @@ export function RecommendationCarousel({ userId }: { userId: number }) {
   };
 
   // Still loading – show a skeleton row of placeholder cards
-  if (idsLoading || bagsLoading) {
+   if (idsLoading || bagsLoading) {
     return (
-      <div className="flex gap-4 overflow-x-auto pb-2 px-4">
+      <div className="grid gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="min-w-[200px] max-w-[200px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm shrink-0 animate-pulse"
+            className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm animate-pulse"
           >
             <div className="mb-2 h-28 w-full rounded-lg bg-slate-100" />
             <div className="h-4 w-3/4 rounded bg-slate-100" />

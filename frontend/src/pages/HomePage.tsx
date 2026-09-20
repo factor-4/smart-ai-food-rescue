@@ -153,17 +153,7 @@ export default function HomePage({ user }: { user: any }) {
                 )}
             </section>
 
-            {/* How it works */}
-            <section>
-                <h2 className="mb-8 text-center text-2xl font-bold text-slate-800">
-                    How it works
-                </h2>
-                <div className="grid gap-8 md:grid-cols-3">
-                    <StepCard step="1" title="Browse nearby bags" description="Use the map to see surplus bags from restaurants around you." />
-                    <StepCard step="2" title="Place your order" description="Reserve a bag instantly with live stock and dynamic pricing." />
-                    <StepCard step="3" title="Pick up & enjoy" description="Collect your meal at the scheduled time and reduce food waste." />
-                </div>
-            </section>
+            
 
             {/* Impact stats */}
             <section className="rounded-3xl bg-green-50 p-8 text-center">
@@ -196,6 +186,7 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
         onSuccess: () => {
             setOrderError(null);
             queryClient.invalidateQueries({ queryKey: ['orders', customerId] });
+            queryClient.invalidateQueries({ queryKey: ['bags-browse'] });
         },
         onError: (err: any) => {
             setOrderError(err?.response?.data?.message || 'Order failed');
@@ -260,17 +251,7 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
     );
 }
 
-function StepCard({ step, title, description }: { step: string; title: string; description: string }) {
-    return (
-        <div className="group rounded-2xl border border-slate-200 bg-white p-6 text-center transition-all duration-300 hover:border-green-300 hover:shadow-md">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-lg font-bold text-green-800">
-                {step}
-            </div>
-            <h3 className="mb-2 text-lg font-semibold text-slate-800">{title}</h3>
-            <p className="text-sm leading-relaxed text-slate-600">{description}</p>
-        </div>
-    );
-}
+
 
 function ImpactStat({ value, label }: { value: string; label: string }) {
     return (
