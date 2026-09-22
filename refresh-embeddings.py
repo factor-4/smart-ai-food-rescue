@@ -6,7 +6,7 @@ DB_HOST = os.getenv("DB_HOST", "postgres")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "smartfood")
 DB_USER = os.getenv("DB_USERNAME", "admin")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "admin123")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
 conn = psycopg2.connect(
     host=DB_HOST, port=DB_PORT, database=DB_NAME,
