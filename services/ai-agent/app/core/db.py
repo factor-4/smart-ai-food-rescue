@@ -6,12 +6,19 @@ Reads connection parameters from environment variables (with defaults).
 import os
 from sqlalchemy import create_engine, text
 
+DB_HOST = os.getenv("DB_HOST", "postgres")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "smartfood")
+DB_USER = os.getenv("DB_USER", "admin")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://admin:admin@localhost:5432/smartfood"
+    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_size=5)
+
 
 def search_similar_bags(query_embedding: list[float], top_k: int = 5) -> list[int]:
     """
@@ -29,7 +36,6 @@ def search_similar_bags(query_embedding: list[float], top_k: int = 5) -> list[in
             {"embedding": query_embedding, "limit": top_k}
         )
         return [row[0] for row in result]
-    
 
 
 def get_bag_by_id(bag_id: int) -> dict | None:
@@ -54,7 +60,6 @@ def get_bag_by_id(bag_id: int) -> dict | None:
             "quantity": row[2],
             "pickup_time": row[3]
         }
-    
 
 
 def get_user_orders(user_id: int, limit: int = 10) -> list[dict]:
@@ -79,8 +84,6 @@ def get_user_orders(user_id: int, limit: int = 10) -> list[dict]:
 def get_available_bags_near(lat: float, lon: float, radius_km: float = 5.0, limit: int = 20) -> list[dict]:
     """
     Return bags that are available (status='AVAILABLE') and optionally near a location.
-    For now, we ignore lat/lon and return all available bags.
-    Later you can add a spatial index.
     """
     with engine.connect() as conn:
         rows = conn.execute(
@@ -105,33 +108,6 @@ def get_available_bags_near(lat: float, lon: float, radius_km: float = 5.0, limi
             }
             for row in rows
         ]
-
-
-def insert_click(user_id: int, bag_id: int) -> None:
-    """
-    Record a click on a recommendation (for future evaluation / CTR tracking).
-    """
-    with engine.connect() as conn:
-        conn.execute(
-            text("""
-                CREATE TABLE IF NOT EXISTS user_feedback (
-                    id BIGSERIAL PRIMARY KEY,
-                    user_id BIGINT NOT NULL,
-                    bag_id BIGINT NOT NULL,
-                    event_type VARCHAR(20) DEFAULT 'click',
-                    created_at TIMESTAMP DEFAULT NOW()
-                )
-            """)
-        )
-        conn.execute(
-            text("""
-                INSERT INTO user_feedback (user_id, bag_id) VALUES (:user_id, :bag_id)
-            """),
-            {"user_id": user_id, "bag_id": bag_id}
-        )
-        conn.commit()
-
-
 
 
 def record_click(user_id: int, bag_id: int, context: str = "recommendation") -> None:
@@ -217,7 +193,7 @@ def calculate_ctr(user_id: int = None, days: int = 30) -> dict:
                 """),
                 {"user_id": user_id, "days": days}
             ).fetchone()
-        
+
         recs = rows[0]
         clicks = rows[1]
         purchases = rows[2]
@@ -228,9 +204,6 @@ def calculate_ctr(user_id: int = None, days: int = 30) -> dict:
             "total_clicks": clicks,
             "total_purchases": purchases
         }
-    
-
-
 
 
 def get_bag_embedding(bag_id: int) -> list[float] | None:
@@ -249,10 +222,8 @@ def get_bag_embedding(bag_id: int) -> list[float] | None:
         emb = row[0]
         if emb is None:
             return None
-        # If already a list (common with pgvector+psycopg2)
         if isinstance(emb, list):
             return [float(x) for x in emb]
-        # If it's a string like "[0.1,0.2,...]"
         if isinstance(emb, str):
             return [float(x) for x in emb.strip('[]').split(',')]
         return None

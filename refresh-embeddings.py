@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer
 DB_HOST = os.getenv("DB_HOST", "postgres")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "smartfood")
-DB_USER = os.getenv("DB_USERNAME", "admin")
+DB_USER = os.getenv("DB_USER", "admin")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
 conn = psycopg2.connect(

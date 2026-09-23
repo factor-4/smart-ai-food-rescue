@@ -1,0 +1,36 @@
+-- 2 more restaurants
+INSERT INTO restaurants (name, description, address, phone, email, owner_id, status, created_at, updated_at)
+VALUES
+    ('Kallio Vegan Corner', 'Plant-based bowls and smoothies', 'Hämeentie 25, Helsinki', '+358401234506', 'vegan@smartfood.local', 4, 'ACTIVE', NOW(), NOW()),
+    ('Töölö Coffee House', 'Specialty coffee and pastries', 'Museokatu 12, Helsinki', '+358401234507', 'coffee@smartfood.local', 5, 'ACTIVE', NOW(), NOW());
+
+-- 20 more bags across all 7 restaurants
+INSERT INTO bags (name, description, image_url, original_price, discounted_price, quantity, pickup_time, status, latitude, longitude, restaurant_id, current_discount, created_at, updated_at)
+VALUES
+    ('Falafel Wrap', 'Crispy falafel, hummus, pickled veg', 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80', 9.50, 4.75, 5, NOW() + INTERVAL '3 hours', 'AVAILABLE', 60.1925, 24.9578, (SELECT id FROM restaurants WHERE name='Kallio Vegan Corner'), 0.50, NOW(), NOW()),
+    ('Acai Bowl', 'Acai, granola, banana, berries', 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=800&q=80', 11.00, 5.50, 3, NOW() + INTERVAL '4 hours', 'AVAILABLE', 60.1925, 24.9578, (SELECT id FROM restaurants WHERE name='Kallio Vegan Corner'), 0.50, NOW(), NOW()),
+    ('Green Smoothie', 'Kale, spinach, mango, ginger', 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=800&q=80', 6.50, 3.25, 8, NOW() + INTERVAL '5 hours', 'AVAILABLE', 60.1925, 24.9578, (SELECT id FROM restaurants WHERE name='Kallio Vegan Corner'), 0.50, NOW(), NOW()),
+    ('Quinoa Salad', 'Quinoa, roasted veg, feta', 'https://images.unsplash.com/photo-1512852939750-1305098529bf?w=800&q=80', 10.50, 5.25, 4, NOW() + INTERVAL '2 hours', 'AVAILABLE', 60.1925, 24.9578, (SELECT id FROM restaurants WHERE name='Kallio Vegan Corner'), 0.50, NOW(), NOW()),
+    ('Cold Brew Coffee', 'Slow-steeped 16h cold brew', 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800&q=80', 4.50, 2.25, 10, NOW() + INTERVAL '6 hours', 'AVAILABLE', 60.1817, 24.9234, (SELECT id FROM restaurants WHERE name='Töölö Coffee House'), 0.50, NOW(), NOW()),
+    ('Croissant & Coffee', 'Butter croissant + flat white', 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800&q=80', 7.50, 3.75, 6, NOW() + INTERVAL '1 hour', 'AVAILABLE', 60.1817, 24.9234, (SELECT id FROM restaurants WHERE name='Töölö Coffee House'), 0.50, NOW(), NOW()),
+    ('Cinnamon Roll', 'Fresh-baked pulla', 'https://images.unsplash.com/photo-1509365465985-25d11c17e812?w=800&q=80', 4.00, 2.00, 12, NOW() + INTERVAL '3 hours', 'AVAILABLE', 60.1817, 24.9234, (SELECT id FROM restaurants WHERE name='Töölö Coffee House'), 0.50, NOW(), NOW()),
+    ('Blueberry Muffin', 'Nordic blueberries', 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=800&q=80', 3.50, 1.75, 9, NOW() + INTERVAL '4 hours', 'AVAILABLE', 60.1817, 24.9234, (SELECT id FROM restaurants WHERE name='Töölö Coffee House'), 0.50, NOW(), NOW()),
+    ('Pasta Carbonara', 'Classic Roman carbonara', 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800&q=80', 14.00, 7.00, 3, NOW() + INTERVAL '3 hours', 'AVAILABLE', 60.1872, 24.9541, (SELECT id FROM restaurants WHERE name='Kallio Kitchen'), 0.50, NOW(), NOW()),
+    ('Beef Burger', 'Finnish beef, brioche bun, fries', 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80', 15.50, 7.75, 4, NOW() + INTERVAL '2 hours', 'AVAILABLE', 60.1872, 24.9541, (SELECT id FROM restaurants WHERE name='Kallio Kitchen'), 0.50, NOW(), NOW()),
+    ('Fish & Chips', 'Beer-battered cod, tartar sauce', 'https://images.unsplash.com/photo-1579208575657-c595a05383b7?w=800&q=80', 13.50, 6.75, 2, NOW() + INTERVAL '4 hours', 'AVAILABLE', 60.1872, 24.9541, (SELECT id FROM restaurants WHERE name='Kallio Kitchen'), 0.50, NOW(), NOW()),
+    ('Chocolate Cake Slice', 'Rich dark chocolate layer cake', 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80', 6.50, 3.25, 7, NOW() + INTERVAL '6 hours', 'AVAILABLE', 60.1683, 24.9317, (SELECT id FROM restaurants WHERE name='Kamppi Bakery'), 0.50, NOW(), NOW()),
+    ('Apple Pie Slice', 'Finnish apple pie with vanilla sauce', 'https://images.unsplash.com/photo-1535920527002-b35e96722eb9?w=800&q=80', 5.50, 2.75, 5, NOW() + INTERVAL '5 hours', 'AVAILABLE', 60.1683, 24.9317, (SELECT id FROM restaurants WHERE name='Kamppi Bakery'), 0.50, NOW(), NOW()),
+    ('Rainbow Roll', 'California roll with assorted sashimi', 'https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?w=800&q=80', 18.50, 9.25, 2, NOW() + INTERVAL '3 hours', 'AVAILABLE', 60.1817, 24.9213, (SELECT id FROM restaurants WHERE name='Töölö Sushi'), 0.50, NOW(), NOW()),
+    ('Miso Soup & Rice', 'Miso soup with steamed rice', 'https://images.unsplash.com/photo-1607301405390-d831c242f59b?w=800&q=80', 8.00, 4.00, 6, NOW() + INTERVAL '5 hours', 'AVAILABLE', 60.1817, 24.9213, (SELECT id FROM restaurants WHERE name='Töölö Sushi'), 0.50, NOW(), NOW()),
+    ('Quattro Formaggi', 'Four-cheese white pizza', 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=800&q=80', 14.50, 7.25, 3, NOW() + INTERVAL '2 hours', 'AVAILABLE', 60.1624, 24.9408, (SELECT id FROM restaurants WHERE name='Punavuori Pizzeria'), 0.50, NOW(), NOW()),
+    ('Prosciutto e Rucola', 'Prosciutto, arugula, parmesan', 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80', 16.00, 8.00, 2, NOW() + INTERVAL '3 hours', 'AVAILABLE', 60.1624, 24.9408, (SELECT id FROM restaurants WHERE name='Punavuori Pizzeria'), 0.50, NOW(), NOW()),
+    ('Tiramisu', 'Classic Italian tiramisu', 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=800&q=80', 7.50, 3.75, 4, NOW() + INTERVAL '6 hours', 'AVAILABLE', 60.1624, 24.9408, (SELECT id FROM restaurants WHERE name='Punavuori Pizzeria'), 0.50, NOW(), NOW()),
+    ('Halloumi Bowl', 'Grilled halloumi, couscous, roasted veg', 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80', 12.00, 6.00, 5, NOW() + INTERVAL '4 hours', 'AVAILABLE', 60.1573, 24.9453, (SELECT id FROM restaurants WHERE name='Eira Green Bowl'), 0.50, NOW(), NOW()),
+    ('Sweet Potato Bowl', 'Roasted sweet potato, black beans, lime', 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80', 11.50, 5.75, 4, NOW() + INTERVAL '5 hours', 'AVAILABLE', 60.1573, 24.9453, (SELECT id FROM restaurants WHERE name='Eira Green Bowl'), 0.50, NOW(), NOW());
+
+-- 3 pre-existing orders for customer_anna (id 7) so the dashboard and impact stats aren't empty
+INSERT INTO orders (idempotency_key, user_id, bag_id, quantity, total_price, status, created_at, updated_at)
+VALUES
+    ('seed-order-1', 7, (SELECT id FROM bags WHERE name='Lunch Bag – Salmon & Potatoes' LIMIT 1), 1, 6.45, 'CONFIRMED', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
+    ('seed-order-2', 7, (SELECT id FROM bags WHERE name='Sushi Set – 12 pieces' LIMIT 1), 1, 9.95, 'CONFIRMED', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'),
+    ('seed-order-3', 7, (SELECT id FROM bags WHERE name='Green Bowl – Kale & Avocado' LIMIT 1), 1, 6.25, 'CONFIRMED', NOW() - INTERVAL '6 hours', NOW() - INTERVAL '6 hours');

@@ -13,6 +13,32 @@ spec:
       labels:
         app: ai-agent
     spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          command: ['sh', '-c']
+          args:
+            - |
+              until pg_isready -h postgres -p 5432 -U admin; do
+                echo "waiting for postgres..."; sleep 2;
+              done
+              echo "postgres is ready"
+        - name: init-schema
+          image: postgres:16-alpine
+          command: ['sh', '-c']
+          args:
+            - |
+              PGPASSWORD=$DB_PASSWORD psql -h postgres -U admin -d smartfood -f /schema/init.sql
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smartfood-secrets
+                  key: DB_PASSWORD
+          volumeMounts:
+            - name: schema
+              mountPath: /schema
+              readOnly: true
       containers:
         - name: ai-agent
           image: smartfood-ai:latest
@@ -46,6 +72,10 @@ spec:
               port: 8000
             initialDelaySeconds: 60
             periodSeconds: 10
+      volumes:
+        - name: schema
+          configMap:
+            name: ai-agent-schema
 ---
 apiVersion: v1
 kind: Service
