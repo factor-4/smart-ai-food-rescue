@@ -1,0 +1,50 @@
+# Python virtual environments (never copy into image)
+venv/
+.venv/
+env/
+ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Test caches
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Hugging Face model cache (downloaded at runtime instead)
+.cache/
+*.cache/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Env files (secrets must never enter the image)
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Tests and docs (not needed at runtime)
+tests/
+docs/
+
+# Docker
+Dockerfile
+.dockerignore
