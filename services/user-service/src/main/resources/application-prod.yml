@@ -7,11 +7,18 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false   # turn off SQL logging in production
+      ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    table: flyway_schema_history_user
 
 eureka:
   client:
@@ -20,7 +27,6 @@ eureka:
 
 app:
   jwt:
-    # In production, the private key will be mounted from a Kubernetes secret
     private-key-path: ${JWT_PRIVATE_KEY_PATH:/app/keys/private-pkcs8.pem}
     public-key-path: ${JWT_PUBLIC_KEY_PATH:/app/keys/public.pem}
     expiration-ms: 86400000
