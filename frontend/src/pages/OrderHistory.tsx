@@ -1,9 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import axios from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { jwtDecode } from 'jwt-decode';
 import { Badge } from '../components/ui/badge';
 import { ImageOff } from 'lucide-react';
+import { useOrderNotifications } from '../hooks/useOrderNotifications';
 
 interface OrderResponse {
   id: number;
@@ -24,19 +26,33 @@ interface BagResponse {
 export default function OrderHistory() {
   const token = useAuthStore((s) => s.token);
   const userId = token ? (jwtDecode<{ userId: number }>(token)).userId : null;
+  const queryClient = useQueryClient();
 
+  // 1. Fetch orders
   const { data: orders, isLoading } = useQuery<OrderResponse[]>({
     queryKey: ['orders', userId],
     queryFn: () => axios.get(`/api/orders?userId=${userId}`).then((res) => res.data),
     enabled: !!userId,
   });
 
+  // 2. Fetch bags for details
   const { data: bags } = useQuery<BagResponse[]>({
     queryKey: ['bags-for-orders'],
     queryFn: () =>
       axios.get('/api/bags?size=1000').then((res) => res.data.content ?? res.data),
     staleTime: 1000 * 60 * 10,
   });
+
+  // 3. Connect to WebSocket for real-time updates
+  const { lastNotification } = useOrderNotifications(userId);
+
+  // 4. When a notification arrives, invalidate the orders query to refetch
+  useEffect(() => {
+    if (lastNotification) {
+      console.log('Order status changed via WebSocket, refetching...', lastNotification);
+      queryClient.invalidateQueries({ queryKey: ['orders', userId] });
+    }
+  }, [lastNotification, queryClient, userId]);
 
   if (!userId) return <p className="p-4 text-sm">Please log in first.</p>;
   if (isLoading) return <p className="p-4 text-sm">Loading orders…</p>;
