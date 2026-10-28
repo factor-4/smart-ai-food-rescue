@@ -28,11 +28,14 @@ export default function OrderHistory() {
   const userId = token ? (jwtDecode<{ userId: number }>(token)).userId : null;
   const queryClient = useQueryClient();
 
-  // 1. Fetch orders
-  const { data: orders, isLoading } = useQuery<OrderResponse[]>({
+  // 1. Fetch orders (with polling every 2 seconds to guarantee updates)
+   const { data: orders, isLoading } = useQuery<OrderResponse[]>({
     queryKey: ['orders', userId],
     queryFn: () => axios.get(`/api/orders?userId=${userId}`).then((res) => res.data),
     enabled: !!userId,
+    refetchInterval: 1000, // Check every 1 second
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always treat data as stale so it updates immediately
   });
 
   // 2. Fetch bags for details

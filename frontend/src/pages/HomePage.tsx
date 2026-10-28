@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useState } from 'react';
 import CardModal from '../components/CardModal';
 import { UtensilsCrossed, Leaf, ChefHat, ImageOff, Search } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 interface BagResponse {
     id: number;
@@ -21,7 +22,6 @@ function generateUUID(): string {
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
         return crypto.randomUUID();
     }
-    // Fallback for non-secure contexts (HTTP)
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
         const r = (Math.random() * 16) | 0;
         const v = c === 'x' ? r : (r & 0x3) | 0x8;
@@ -59,7 +59,6 @@ export default function HomePage({ user }: { user: any }) {
 
     return (
         <div className="mx-auto max-w-6xl space-y-16 px-4 sm:px-6">
-            {/* Hero section */}
             <section
                 className="relative overflow-hidden rounded-3xl px-8 py-16 shadow-inner bg-cover bg-center"
                 style={{ backgroundImage: "url('/images/hero.png')" }}
@@ -108,7 +107,6 @@ export default function HomePage({ user }: { user: any }) {
                 </div>
             </section>
 
-            {/* Recommendations */}
             <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-6 flex items-center justify-between">
                     <div>
@@ -124,7 +122,6 @@ export default function HomePage({ user }: { user: any }) {
                 </div>
             </section>
 
-            {/* Available bags + search */}
             <section>
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <h2 className="text-2xl font-bold text-slate-800">Available Bags</h2>
@@ -153,9 +150,6 @@ export default function HomePage({ user }: { user: any }) {
                 )}
             </section>
 
-            
-
-            {/* Impact stats */}
             <section className="rounded-3xl bg-green-50 p-8 text-center">
                 <h2 className="text-2xl font-bold text-green-900">Your impact so far</h2>
                 <div className="mt-6 grid gap-6 md:grid-cols-3">
@@ -171,6 +165,7 @@ export default function HomePage({ user }: { user: any }) {
 function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) {
     const [showCardModal, setShowCardModal] = useState(false);
     const [orderError, setOrderError] = useState<string | null>(null);
+    const { showToast } = useToast();
 
     const queryClient = useQueryClient();
 
@@ -187,9 +182,12 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
             setOrderError(null);
             queryClient.invalidateQueries({ queryKey: ['orders', customerId] });
             queryClient.invalidateQueries({ queryKey: ['bags-browse'] });
+            showToast('Order submitted successfully!', 'success');
         },
         onError: (err: any) => {
-            setOrderError(err?.response?.data?.message || 'Order failed');
+            const msg = err?.response?.data?.message || 'Order failed';
+            setOrderError(msg);
+            showToast(msg, 'error');
         },
     });
 
@@ -250,8 +248,6 @@ function BagCard({ bag, customerId }: { bag: BagResponse; customerId: number }) 
         </>
     );
 }
-
-
 
 function ImpactStat({ value, label }: { value: string; label: string }) {
     return (

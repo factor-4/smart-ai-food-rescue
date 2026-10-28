@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise } from './lib/stripe';
+import { ToastProvider } from './context/ToastContext';
 
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
@@ -81,9 +82,11 @@ function AppContent() {
 
 function App() {
     return (
-        <BrowserRouter>
-            <AppContent />
-        </BrowserRouter>
+        <ToastProvider>
+            <BrowserRouter>
+                <AppContent />
+            </BrowserRouter>
+        </ToastProvider>
     );
 }
 
