@@ -18,7 +18,7 @@ class PricingAgent:
         self.max_discount = 0.70
 
         self.llm = ChatOllama(
-            model="phi3:mini",
+            model="llama3.2:1b",
             temperature=0,
             base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         )

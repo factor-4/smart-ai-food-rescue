@@ -16,9 +16,10 @@ class PlanOutput(BaseModel):
 class PlannerAgent:
     def __init__(self):
         self.llm = ChatOllama(
-            model="phi3:mini",
+            model="llama3.2:1b",
             temperature=0,
             base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+             timeout=30,
         )
         self.parser = PydanticOutputParser(pydantic_object=PlanOutput)
         self.prompt = ChatPromptTemplate.from_messages([
